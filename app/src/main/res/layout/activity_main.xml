@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="meters"
+        app:layout_constraintBottom_toBottomOf="@+id/user_altitude_edit_text"
+        app:layout_constraintStart_toEndOf="@+id/user_altitude_edit_text"
+        app:layout_constraintTop_toTopOf="@+id/user_altitude_edit_text" />
+
+    <Space
+        android:id="@+id/space"
+        android:layout_width="102dp"
+        android:layout_height="64dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Space
+        android:id="@+id/space2"
+        android:layout_width="229dp"
+        android:layout_height="52dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="send_to_gmaps_callback"
+        android:text="@string/landing_prediction_gmaps_btn_txt"
+        app:layout_constraintBottom_toTopOf="@+id/space"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/landing_prediction_area"
+        android:layout_width="349dp"
+        android:layout_height="64dp"
+        android:text="@string/landing_prediction"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="365dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:fillViewport="true"
+        android:rotationX="0"
+        android:scrollbarStyle="insideOverlay"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/space2">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/packet_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:accessibilityHeading="false"
+                android:accessibilityLiveRegion="none"
+                android:justificationMode="none"
+                android:keepScreenOn="true"
+                android:text="@string/landing_guess_text"
+                android:textAlignment="textStart"
+                android:textAllCaps="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textDirection="ltr"
+                android:textIsSelectable="true" />
+        </LinearLayout>
+    </ScrollView>
+
+    <EditText
+        android:id="@+id/user_altitude_edit_text"
+        android:layout_width="133dp"
+        android:layout_height="48dp"
+        android:ems="10"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:text="100"
+        app:layout_constraintBottom_toTopOf="@+id/landing_prediction_area"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Altitude"
+        app:layout_constraintBottom_toBottomOf="@+id/user_altitude_edit_text"
+        app:layout_constraintEnd_toStartOf="@+id/user_altitude_edit_text"
+        app:layout_constraintTop_toTopOf="@+id/user_altitude_edit_text" />
+
+    <ImageView
+        android:id="@+id/disconnectedStar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/connectionButton"
+        app:layout_constraintStart_toEndOf="@+id/connectionButton"
+        app:layout_constraintTop_toTopOf="@+id/connectionButton"
+        app:srcCompat="@android:drawable/btn_star_big_off" />
+
+    <ImageView
+        android:id="@+id/connectedStar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/disconnectedStar"
+        app:layout_constraintStart_toStartOf="@+id/disconnectedStar"
+        app:srcCompat="@android:drawable/btn_star_big_on" />
+
+    <ToggleButton
+        android:id="@+id/connectionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:capitalize="none"
+        android:clickable="true"
+        android:onClick="connection_button_callback"
+        android:text="ToggleButton"
+        android:textOff="Connect"
+        android:textOn="CONNECTED"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
