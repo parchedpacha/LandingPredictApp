@@ -58,6 +58,8 @@ public class Predict {
 
 
         // append those values onto our lists of altitudes, voltages, longitides, latitudes
+
+        // call the extrapolate function to update the prediction
     }
 
     private void extrapolate() {
@@ -89,8 +91,5 @@ public class Predict {
         return landing_prediction_coords;
     }
 
-//    public interface MyCallback {
-//        // Declaration of the template function for the interface
-//        public void updateMyText(String myString);
-//    }
+
 }

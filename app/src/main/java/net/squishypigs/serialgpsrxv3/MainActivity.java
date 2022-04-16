@@ -107,10 +107,7 @@ public class MainActivity extends AppCompatActivity {
         predict.setUser_altitude(Double.parseDouble(user_alt.toString()) );
     }
 
-//    @Override
-//    public void updateMyText(String myString) {
-//        ((TextView) findViewById(R.id.landing_prediction_area)).setText(myString);
-//    }
+
 
     public void connection_button_callback(View view) {
 
