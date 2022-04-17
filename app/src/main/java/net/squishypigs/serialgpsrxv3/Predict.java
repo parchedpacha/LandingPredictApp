@@ -4,29 +4,55 @@ import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
 import android.os.IBinder;
+import android.text.format.Time;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import com.hoho.android.usbserial.driver.UsbSerialPort;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Predict {
+public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<String>();
+    private String lastpacketString;
+    private byte[] newpacket;
     private int number_of_good_packets;
     private String landing_prediction_coords;
     private double[] decoded_rocket_latitudes;
     private double[] decoded_rocket_longitudes;
     private double[] decoded_rocket_altitudes;
+    private UsbSerialPort port;
     private double user_altitude;
 //    private double user_latitude;
 //    private double user_longitude;
     private int satellites;
     private double voltage;
     //private Time
+    public void run() {  // might rename this, whatever to get it working
+        //This method needs to run on a new thread, it will watch the serial connection for new
+        // bytes and dispatch the parsePacket method to update the Predict class's data and send
+        // it to the user. Additionally the extrapolate method will be called to generate the
+        // expected landing coordinates and that will also be displayed to the user.
 
+        while (port !=null && port.isOpen()) {
+            try {
+                port.read(newpacket,500);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            parsePacket();
 
+        }
+    }
+    public void parsePacket() {
+        lastpacketString = new String(newpacket, StandardCharsets.UTF_8);
+
+    }
     public void setUser_altitude(double user_altitude) {
         this.user_altitude = user_altitude;
     }
@@ -36,11 +62,8 @@ public class Predict {
     }
 
     public Predict(Location loc) {
-        // Setter for user location and altitude
+        // Setter for user location and altitude when I figure out how tf i am gonna do that
         this.user_altitude = loc.getAltitude();
-//        this.user_latitude = loc.getLatitude();
-//        this.user_longitude = loc.getLongitude();
-
     }
     public Predict(Double altitude){
         this.user_altitude = altitude;
@@ -90,6 +113,4 @@ public class Predict {
     public String getLanding_prediction_coords() {
         return landing_prediction_coords;
     }
-
-
 }

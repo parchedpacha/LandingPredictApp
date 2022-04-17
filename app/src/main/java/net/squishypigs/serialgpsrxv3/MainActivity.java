@@ -44,54 +44,49 @@ import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity {
-    public static Predict predict;
+    public Predict predict;
     public UsbSerialPort port;
     public Handler mainLooper;
     public SerialInputOutputManager usbIoManager;
-
+    public Thread watcherThread;
+    public Runnable runnable;
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         predict = new Predict(100.0);
+
         EditText User_alt_ET =  findViewById(R.id.user_altitude_edit_text);
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
+        // I do not want to sort out rotations and stuff, plus the users phone might inteentionally
+        // have its orientation screwed with and need to maintain functionality. For instance, poointing the user's
+        // phone up to the sky should not cause the app to rotate at all.
+
+
         // SERIAL TRASH ----------------------------------------------------------------------------
         setbutton();
         start_connection();
 
         // END SERIAL TRASH ------------------------------------------------------------------------
-
         View.OnFocusChangeListener listener = (v, hasFocus) -> {
-
             if (!hasFocus) {
-
                 String text = User_alt_ET.getText().toString();
                 predict.setUser_altitude(Double.parseDouble(text));
                 TextView landing_prediction_area=findViewById(R.id.landing_prediction_area);
                 landing_prediction_area.append("\nuser altitude = "+predict.getUser_altitude());
             }
-
         };
-
-
         User_alt_ET.setOnFocusChangeListener(listener);
-        mainLooper = new Handler(Looper.getMainLooper());
 
-            
-            
+        //mainLooper = new Handler(Looper.getMainLooper());
     }
     // TODO Add serial Opening function
     // TODO Add event driven serial data read
     // TODO add serial data parser and Quality Control
     // TODO Add math for generating landing location
     // TODO add precise location permission / some way to get current altitude
-
-
-
-
-
 
 
     public void send_to_gmaps_callback(View app) {
@@ -101,20 +96,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    public void user_altitude_set_callback(View app) {
-        TextView user_alt = findViewById(R.id.user_altitude_edit_text);
-
-        predict.setUser_altitude(Double.parseDouble(user_alt.toString()) );
-    }
-
-
-
+//    public void user_altitude_set_callback(View app) {
+//        TextView user_alt = findViewById(R.id.user_altitude_edit_text);
+//
+//        predict.setUser_altitude(Double.parseDouble(user_alt.toString()) );
+//    }
     public void connection_button_callback(View view) {
 
 
         setbutton();
 
     }
+
     public void setbutton()  {
         ToggleButton buttonview = findViewById(R.id.connectionButton);
         if (buttonview.isChecked()) {
@@ -151,8 +144,6 @@ public class MainActivity extends AppCompatActivity {
         UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
 
         if (connection != null) {
-            // add UsbManager.requestPermission(driver.getDevice(), ..) handling here
-
             port = driver.getPorts().get(0);
             try {
                 // if  all the checks have passed, then connect, and also show the user that the connection was successful
@@ -164,12 +155,28 @@ public class MainActivity extends AppCompatActivity {
                 usbIoManager = new SerialInputOutputManager(port, (SerialInputOutputManager.Listener) this);
                 usbIoManager.start();
 
+                //begin_watching_serial(); //<-- here the serial watcher thread will be ran
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
 
+    }
+
+    public static Thread begin_watching_serial(final Runnable runnable) { // I believe I want to use this method to begin the background serial watching thread
+        final Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    runnable.run();
+                } finally {
+
+                }
+            }
+        };
+        t.start();
+        return t;
     }
 
 
