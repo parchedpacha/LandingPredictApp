@@ -21,6 +21,7 @@ public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<String>();
     private String lastpacketString;
     private byte[] newpacket;
+    private int newpacketlength;
     private int number_of_good_packets;
     private String landing_prediction_coords;
     private double[] decoded_rocket_latitudes;
@@ -33,15 +34,15 @@ public class Predict extends Thread implements Runnable{
     private int satellites;
     private double voltage;
     //private Time
-    public void run() {  // might rename this, whatever to get it working
+    public void read_one_time() {  // might rename this, whatever to get it working
         //This method needs to run on a new thread, it will watch the serial connection for new
         // bytes and dispatch the parsePacket method to update the Predict class's data and send
         // it to the user. Additionally the extrapolate method will be called to generate the
         // expected landing coordinates and that will also be displayed to the user.
 
-        while (port !=null && port.isOpen()) {
+        if (port !=null && port.isOpen()) {
             try {
-                port.read(newpacket,500);
+                newpacketlength=port.read(newpacket,500);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -49,9 +50,30 @@ public class Predict extends Thread implements Runnable{
 
         }
     }
-    public void parsePacket() {
+    public void parsePacket() { //this method parses a given packet for our data, and if its good, updates our list of data
+        //A42.558071  ,O-83.180877 ,T12:00:19,H02000.9,S13,V8.12
+        // A sample packet, lAt, lOng, Time, Height, Satellites, Voltage
         lastpacketString = new String(newpacket, StandardCharsets.UTF_8);
+        String[] parts=lastpacketString.split("[,]",0);
+        boolean[] bad_fields = {false,false,false,false,false,false};
+        String[] check_letters={"A","O","T","H","S","V"};
+        for (int i=0;i<parts.length;i++) { //check our strings to make sure each has the correct letter, and mark if otherwise
+            if (!parts[i].contains((check_letters[i]))) {
+                bad_fields[i]=true;
+            }
+        }
+        if (any(bad_fields)) { // this is run if any of the fields don't contain their field letter
 
+        }
+
+    }
+    private boolean any(boolean[] myBooleanArray) {
+        for (boolean value : myBooleanArray) {
+            if (value) {
+                return true;
+            }
+        }
+        return false;
     }
     public void setUser_altitude(double user_altitude) {
         this.user_altitude = user_altitude;

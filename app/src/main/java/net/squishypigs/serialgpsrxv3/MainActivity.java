@@ -164,20 +164,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static Thread begin_watching_serial(final Runnable runnable) { // I believe I want to use this method to begin the background serial watching thread
-        final Thread t = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    runnable.run();
-                } finally {
-
-                }
-            }
-        };
-        t.start();
-        return t;
-    }
+//    public static Thread begin_watching_serial(final Runnable runnable) { // I believe I want to use this method to begin the background serial watching thread
+//        final Thread t = new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    runnable.run();
+//                } finally {
+//
+//                }
+//            }
+//        };
+//        t.start();
+//        return t;
+//    }
 
 
 
