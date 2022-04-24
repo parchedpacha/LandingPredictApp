@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
 import android.os.IBinder;
-import android.text.format.Time;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -14,19 +13,25 @@ import com.hoho.android.usbserial.driver.UsbSerialPort;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<String>();
     private String lastpacketString;
-    private byte[] newpacket;
+    private byte[] newpacket; // TODO does this need to be an arraylist to avoid issues?
     private int newpacketlength;
     private int number_of_good_packets;
     private String landing_prediction_coords;
-    private double[] decoded_rocket_latitudes;
-    private double[] decoded_rocket_longitudes;
-    private double[] decoded_rocket_altitudes;
+    private ArrayList<Double> decoded_rocket_latitudes;
+    private ArrayList<Double> decoded_rocket_longitudes;
+    private ArrayList<String> decoded_rocket_datestamps;
+    private ArrayList<Double> decoded_rocket_altitudes;
+    private ArrayList<Integer> decoded_rocket_satellites;
+    private ArrayList<Double> decoded_rocket_voltages;
+    private final String[] check_letters={"A","O","T","H","S","V"};
     private UsbSerialPort port;
     private double user_altitude;
 //    private double user_latitude;
@@ -53,16 +58,24 @@ public class Predict extends Thread implements Runnable{
     public void parsePacket() { //this method parses a given packet for our data, and if its good, updates our list of data
         //A42.558071  ,O-83.180877 ,T12:00:19,H02000.9,S13,V8.12
         // A sample packet, lAt, lOng, Time, Height, Satellites, Voltage
+        // TODO make sure the string by this point is split into individual packets
         lastpacketString = new String(newpacket, StandardCharsets.UTF_8);
         String[] parts=lastpacketString.split("[,]",0);
         boolean[] bad_fields = {false,false,false,false,false,false};
-        String[] check_letters={"A","O","T","H","S","V"};
+
         for (int i=0;i<parts.length;i++) { //check our strings to make sure each has the correct letter, and mark if otherwise
             if (!parts[i].contains((check_letters[i]))) {
                 bad_fields[i]=true;
             }
         }
-        if (any(bad_fields)) { // this is run if any of the fields don't contain their field letter
+        if (!any(bad_fields)) { // this is run if any of the fields don't contain their field letter
+            StringTokenizer telemetryTokens=new StringTokenizer(lastpacketString,",");
+            if (telemetryTokens.countTokens() == check_letters.length) { //make sure we have as many teleetry numbers as we expect before trying to store their values into our pseudo database
+                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                decoded_rocket_datestamps.add(telemetryTokens.nextToken()); //TODO parse this time of format T12:00:19 into the java date format for math reasons
+                decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+            }
 
         }
 
