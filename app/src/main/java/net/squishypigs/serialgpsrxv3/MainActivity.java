@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public SerialInputOutputManager usbIoManager;
     public Thread watcherThread;
     public Runnable runnable;
+    public String landing_prediction ="42.561996,-83.162815";
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void send_to_gmaps_callback(View app) {
-        Uri location = Uri.parse("geo:0,0?q=" + "42.561996,-83.162815" + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
+        Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, location); // use the URI to create out intent
         startActivity(mapIntent); // tell android to launch the map
 

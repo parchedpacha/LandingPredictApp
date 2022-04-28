@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+
+import com.google.common.primitives.Doubles;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 
 import java.io.IOException;
@@ -39,6 +41,17 @@ public class Predict extends Thread implements Runnable{
     private int satellites;
     private double voltage;
     //private Time
+    public String getLanding_prediction_coords() {
+        return landing_prediction_coords;
+    }
+    public void setUser_altitude(double user_altitude) {
+        this.user_altitude = user_altitude;
+    }
+    public double getUser_altitude() {
+        return user_altitude;
+    }
+
+
     public void read_one_time() {  // might rename this, whatever to get it working
         //This method needs to run on a new thread, it will watch the serial connection for new
         // bytes and dispatch the parsePacket method to update the Predict class's data and send
@@ -51,15 +64,25 @@ public class Predict extends Thread implements Runnable{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            parsePacket();
+
+            //swap these out with add packet to encapsulate the whole process
+
+            addPacket();
 
         }
+    }
+
+
+    private void createPacketString() {
+        byte[] slice = new byte[newpacketlength];
+        System.arraycopy(newpacket, 0, slice, 0, slice.length);
+        lastpacketString = new String(slice, StandardCharsets.UTF_8);
     }
     public void parsePacket() { //this method parses a given packet for our data, and if its good, updates our list of data
         //A42.558071  ,O-83.180877 ,T12:00:19,H02000.9,S13,V8.12
         // A sample packet, lAt, lOng, Time, Height, Satellites, Voltage
         // TODO make sure the string by this point is split into individual packets
-        lastpacketString = new String(newpacket, StandardCharsets.UTF_8);
+
         String[] parts=lastpacketString.split("[,]",0);
         boolean[] bad_fields = {false,false,false,false,false,false};
 
@@ -69,32 +92,22 @@ public class Predict extends Thread implements Runnable{
             }
         }
         if (!any(bad_fields)) { // this is run if any of the fields don't contain their field letter
-            StringTokenizer telemetryTokens=new StringTokenizer(lastpacketString,",");
-            if (telemetryTokens.countTokens() == check_letters.length) { //make sure we have as many teleetry numbers as we expect before trying to store their values into our pseudo database
-                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                decoded_rocket_datestamps.add(telemetryTokens.nextToken()); //TODO parse this time of format T12:00:19 into the java date format for math reasons
-                decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-            }
+            StringTokenizer telemetryTokens=new StringTokenizer(lastpacketString,","); //substring is used to remove the identification character
+            if (telemetryTokens.countTokens() == check_letters.length) { //make sure we have as many telemetry numbers as we expect before trying to store their values into our pseudo database
 
-        }
 
-    }
-    private boolean any(boolean[] myBooleanArray) {
-        for (boolean value : myBooleanArray) {
-            if (value) {
-                return true;
+                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1)); //TODO parse this time of format T12:00:19 into the java date format for math reasons
+                decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken().substring(1)));
+                decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
             }
         }
-        return false;
-    }
-    public void setUser_altitude(double user_altitude) {
-        this.user_altitude = user_altitude;
+        // ast this point we have completely parsed the packet and assigned its contents to our respective variables. Now move onto the extrapolate function
     }
 
-    public double getUser_altitude() {
-        return user_altitude;
-    }
+
 
     public Predict(Location loc) {
         // Setter for user location and altitude when I figure out how tf i am gonna do that
@@ -107,17 +120,35 @@ public class Predict extends Thread implements Runnable{
         //the void case, for making the class exist, then updating it all later
     }
 
-    public void addPacket( String raw_packet) {
+    public void addPacket( ) {
         // Adds a packet to our list of packets, and begins a new prediction
-        this.raw_packets.add( raw_packet);
+        createPacketString();
+        this.raw_packets.add( lastpacketString);
         // TODO add function to convert raw packets into list of coords and altitudes
 
         // regex or something to convert/tokenize the string into individual values
 
-
-        // append those values onto our lists of altitudes, voltages, longitides, latitudes
-
+        parsePacket();   // append those values onto our lists of altitudes, voltages, longitides, latitudes
         // call the extrapolate function to update the prediction
+        extrapolate();
+
+    }
+    private double linear_interp (double[] locations, double[] altitudes, double user_altitude) {
+        //this function generates a slope
+        double slope = 0; //create a variable to hold our calculated slopes
+
+        for (int i=0;i< locations.length-1;i++) {
+            slope +=  (altitudes[i+1]-altitudes[i])/(locations[i+1]-locations[i] );
+        }
+
+        slope=slope/(locations.length-1);
+
+
+        return (altitudes[altitudes.length-1] - user_altitude)/slope;
+
+
+
+
     }
 
     private void extrapolate() {
@@ -138,14 +169,20 @@ public class Predict extends Thread implements Runnable{
         //function of long output vs altitude input
 
         // run both functions at lat = 0, or alt = user alt
-
-
+        double landingLat=linear_interp(Doubles.toArray(decoded_rocket_latitudes), Doubles.toArray(decoded_rocket_altitudes),user_altitude);
+        double landingLong=linear_interp(Doubles.toArray(decoded_rocket_longitudes), Doubles.toArray(decoded_rocket_altitudes),user_altitude);
         // set values as our landing prediction
-
+        landing_prediction_coords = landingLat + "" + landingLong;
         //maybe set a UI indicator showing that packets have been recieved, decoded, and that our prediction is good and ready for use
     }
 
-    public String getLanding_prediction_coords() {
-        return landing_prediction_coords;
+    private boolean any(boolean[] myBooleanArray) {
+        for (boolean value : myBooleanArray) {
+            if (value) {
+                return true;
+            }
+        }
+        return false;
     }
-}
+
+    }
