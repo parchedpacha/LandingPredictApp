@@ -10,7 +10,7 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="meters"
+        android:text="@string/altitude_meters_label"
         app:layout_constraintBottom_toBottomOf="@+id/user_altitude_edit_text"
         app:layout_constraintStart_toEndOf="@+id/user_altitude_edit_text"
         app:layout_constraintTop_toTopOf="@+id/user_altitude_edit_text" />
@@ -149,5 +149,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button" />
+
+    <Button
+        android:id="@+id/readbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Read Once"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
