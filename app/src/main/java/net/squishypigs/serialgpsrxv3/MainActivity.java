@@ -102,7 +102,9 @@ public class MainActivity extends AppCompatActivity {
     // TODO add serial data parser and Quality Control
     // TODO Add math for generating landing location
     // TODO add precise location permission / some way to get current altitude
-
+    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
+        predict.addPacket();
+    }
 
     public void send_to_gmaps_callback(View app) {
         Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
