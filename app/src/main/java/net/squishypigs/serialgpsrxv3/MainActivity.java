@@ -1,10 +1,8 @@
 package net.squishypigs.serialgpsrxv3;
 
 import static android.content.pm.ActivityInfo.*;
-import static net.squishypigs.serialgpsrxv3.Predict.*;
 
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 
@@ -12,43 +10,33 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
-import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.internal.ConnectionCallbacks;
-import com.google.android.gms.common.api.internal.OnConnectionFailedListener;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity {
     public Predict predict;
     public UsbSerialPort port;
     public Handler mainLooper;
-    public SerialInputOutputManager usbIoManager;
+    public SerialInputOutputManager usbSIoManager;
     public Thread watcherThread;
     public Runnable runnable;
     public String landing_prediction ="42.561996,-83.162815";
@@ -69,7 +57,12 @@ public class MainActivity extends AppCompatActivity {
 
         // SERIAL TRASH ----------------------------------------------------------------------------
         setButton();
-        start_connection();
+        if (check_connection()) {
+            usbSIoManager = start_connection();
+            // TODO I think I need to add the listener declaration in here, not quite sure how
+        }
+
+
 
         // END SERIAL TRASH ------------------------------------------------------------------------
         View.OnFocusChangeListener listener = (v, hasFocus) -> {
@@ -80,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 //landing_prediction_area.append("\nuser altitude = "+predict.getUser_altitude());
             }
         };
-
         User_alt_ET.setOnFocusChangeListener(listener);
 
         @SuppressLint("SetTextI18n") View.OnClickListener readButtonListener = (v) -> {
@@ -102,7 +94,8 @@ public class MainActivity extends AppCompatActivity {
     // TODO add serial data parser and Quality Control
     // TODO Add math for generating landing location
     // TODO add precise location permission / some way to get current altitude
-    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
+
+    public void onNewData() { //this is the event listener to get data from the USB serial and stuff it into predictor
         predict.addPacket();
     }
 
@@ -148,14 +141,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void start_connection() {
+
+
+    public boolean check_connection() {
+        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+        ToggleButton buttonView = findViewById(R.id.connectionButton);
+        return !availableDrivers.isEmpty();
+    }
+    public SerialInputOutputManager start_connection()  {
         // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
         ToggleButton buttonView = findViewById(R.id.connectionButton);
-        if (availableDrivers.isEmpty()) {
-            return;
-        }
 
         // Open a connection to the first available driver.
         UsbSerialDriver driver = availableDrivers.get(0);
@@ -170,9 +168,9 @@ public class MainActivity extends AppCompatActivity {
                 ImageView iv = findViewById(R.id.connectedStar);
                 iv.setVisibility(View.VISIBLE);
                 buttonView.setChecked(true);
-                usbIoManager = new SerialInputOutputManager(port, (SerialInputOutputManager.Listener) this);
-                usbIoManager.start();
-
+                usbSIoManager = new SerialInputOutputManager(port, (SerialInputOutputManager.Listener) this);
+                usbSIoManager.start();
+                return usbSIoManager;
                 //begin_watching_serial(); //<-- here the serial watcher thread will be ran
             } catch (IOException e) {
                 e.printStackTrace();
@@ -180,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        return null; //this function runs after we check if a port is open, so this *should* never return null, haha
     }
 
 //    public static Thread begin_watching_serial(final Runnable runnable) { // I believe I want to use this method to begin the background serial watching thread
