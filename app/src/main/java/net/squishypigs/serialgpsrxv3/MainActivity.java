@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         // SERIAL TRASH ----------------------------------------------------------------------------
         setButton();
         if (check_connection()) {
-            usbSIoManager = start_connection();
+             start_connection();
             // TODO I think I need to add the listener declaration in here, not quite sure how
         }
 
@@ -95,15 +95,17 @@ public class MainActivity extends AppCompatActivity {
     // TODO Add math for generating landing location
     // TODO add precise location permission / some way to get current altitude
 
-    public void onNewData() { //this is the event listener to get data from the USB serial and stuff it into predictor
-        predict.addPacket();
+    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
+        predict.collectRawBytes(data);
     }
 
     public void send_to_gmaps_callback(View app) {
-        Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location); // use the URI to create out intent
-        startActivity(mapIntent); // tell android to launch the map
+        if (!(landing_prediction ==null)) {
+            Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
 
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, location); // use the URI to create out intent
+            startActivity(mapIntent); // tell android to launch the map
+        }
 
     }
 //    public void user_altitude_set_callback(View app) {
@@ -119,15 +121,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void setButton()  {
+    public void setButton()  { // when the user presses the connect button, try to
         ToggleButton buttonView = findViewById(R.id.connectionButton);
-        if (buttonView.isChecked()) {
+        if (buttonView.isChecked() && check_connection()) { //if we are moving from unpressed to pressed, and we have a usable serial port
+
             start_connection();
 
             if (port ==null || !port.isOpen()) {
                 buttonView.setChecked(false);
             }
-        } else {
+        } else { //if we are disconnecting
             if (port != null) {
                 if (port.isOpen()) {
                     try{port.close();} catch (IOException e) {
@@ -149,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         ToggleButton buttonView = findViewById(R.id.connectionButton);
         return !availableDrivers.isEmpty();
     }
-    public SerialInputOutputManager start_connection()  {
+    public void start_connection()  {
         // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
@@ -168,9 +171,30 @@ public class MainActivity extends AppCompatActivity {
                 ImageView iv = findViewById(R.id.connectedStar);
                 iv.setVisibility(View.VISIBLE);
                 buttonView.setChecked(true);
-                usbSIoManager = new SerialInputOutputManager(port, (SerialInputOutputManager.Listener) this);
+                usbSIoManager = new SerialInputOutputManager(port);
                 usbSIoManager.start();
-                return usbSIoManager;
+                usbSIoManager.setListener(new SerialInputOutputManager.Listener() {
+                    /**
+                     * Called when new incoming data is available.
+                     *
+                     * @param data incoming serial data
+                     */
+                    @Override
+                    public void onNewData(byte[] data) {
+                        predict.collectRawBytes(data);
+                    }
+
+                    /**
+                     * Called when {@link SerialInputOutputManager#run()} aborts due to an error.
+                     *
+                     * @param e
+                     */
+                    @Override
+                    public void onRunError(Exception e) {
+
+                    }
+                });
+                //return usbSIoManager;
                 //begin_watching_serial(); //<-- here the serial watcher thread will be ran
             } catch (IOException e) {
                 e.printStackTrace();
@@ -178,23 +202,10 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        return null; //this function runs after we check if a port is open, so this *should* never return null, haha
+        //return null; //this function runs after we check if a port is open, so this *should* never return null, haha
     }
 
-//    public static Thread begin_watching_serial(final Runnable runnable) { // I believe I want to use this method to begin the background serial watching thread
-//        final Thread t = new Thread() {
-//            @Override
-//            public void run() {
-//                try {
-//                    runnable.run();
-//                } finally {
-//
-//                }
-//            }
-//        };
-//        t.start();
-//        return t;
-//    }
+
 
 
 
