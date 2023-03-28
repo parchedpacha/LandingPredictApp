@@ -88,6 +88,21 @@ public class MainActivity extends AppCompatActivity {
         Button readButton = findViewById(R.id.readbutton);
         readButton.setOnClickListener(readButtonListener);
         //mainLooper = new Handler(Looper.getMainLooper());
+
+        Handler handler =new Handler();
+        final Runnable r = new Runnable() {
+            public void run() {
+                handler.postDelayed(this, 500);
+                //List<String> allpackets= predict.getRaw_packets();
+                //addMessage(String.valueOf(allpackets));
+                addMessage(predict.getNiceData());
+                TextView landing_prediction_area=findViewById(R.id.landing_prediction_area);
+                landing_prediction =predict.getLanding_prediction_coords();
+                landing_prediction_area.setText("Landing Prediction: "+ landing_prediction);
+            }
+        };
+        handler.postDelayed(r, 0000);
+
     }
     // TODO Add serial Opening function
     // TODO Add event driven serial data read
@@ -95,9 +110,9 @@ public class MainActivity extends AppCompatActivity {
     // TODO Add math for generating landing location
     // TODO add precise location permission / some way to get current altitude
 
-    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
-        predict.collectRawBytes(data);
-    }
+//    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
+//        predict.collectRawBytes(data);
+//    }
 
     public void send_to_gmaps_callback(View app) {
         if (!(landing_prediction ==null)) {
@@ -144,7 +159,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    public void clearpackets_callback(View view) {
+        TextView packet_area = findViewById(R.id.packet_text_view);
+        packet_area.setText("");
+    }
 
     public boolean check_connection() {
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -182,6 +200,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNewData(byte[] data) {
                         predict.collectRawBytes(data);
+                        //TextView packet_area= findViewById(R.id.packet_text_view);
+                        //packet_area.setText(String.valueOf(new String(data)));
                     }
 
                     /**
@@ -197,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
                 //return usbSIoManager;
                 //begin_watching_serial(); //<-- here the serial watcher thread will be ran
             } catch (IOException e) {
+                System.out.println( "Oopsie woopsie In Out Ewwow");
                 e.printStackTrace();
             }
 
@@ -207,6 +228,19 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    private void addMessage(String msg) {
 
+        TextView packet_area= findViewById(R.id.packet_text_view);
+        packet_area.setText(msg);
+        // append the new string
+        packet_area.append(msg + "\n");
+        // find the amount we need to scroll.  This works by
+        // asking the TextView's internal layout for the position
+        // of the final line and then subtracting the TextView's height
+        //final int scrollAmount = packet_area.getLayout().getLineTop(packet_area.getLineCount()) - packet_area.getHeight();
+        // if there is no need to scroll, scrollAmount will be <=0
+
+            packet_area.scrollTo(0, 0); //packet_area.getHeight()
+    }
 
 }

@@ -4,4 +4,5 @@
     <string name="landing_prediction">Landing prediction:</string>
     <string name="landing_guess_text">Packets will Appear here</string>
     <string name="altitude_meters_label">meters</string>
+    <string name="ClearButton"> Clear</string>
 </resources>

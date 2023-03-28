@@ -1,6 +1,7 @@
 package net.squishypigs.serialgpsrxv3;
 
 import android.location.Location;
+import android.util.Log;
 
 
 import com.google.common.primitives.Doubles;
@@ -8,6 +9,7 @@ import com.hoho.android.usbserial.driver.UsbSerialPort;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -16,17 +18,17 @@ public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<String>();
     private byte[] bytebuffer;
     private String lastpacketString;
-    private String newpacket; // TODO does this need to be an arraylist to avoid issues?
+    private String newpacket;
 
     private int newpacketlength;
     private int number_of_good_packets=0;
     private String landing_prediction_coords;
-    private ArrayList<Double> decoded_rocket_latitudes;
-    private ArrayList<Double> decoded_rocket_longitudes;
-    private ArrayList<String> decoded_rocket_datestamps;
-    private ArrayList<Double> decoded_rocket_altitudes;
-    private ArrayList<Integer> decoded_rocket_satellites;
-    private ArrayList<Double> decoded_rocket_voltages;
+    private ArrayList<Double> decoded_rocket_latitudes = new ArrayList<Double>();
+    private ArrayList<Double> decoded_rocket_longitudes = new ArrayList<Double>();
+    private ArrayList<String> decoded_rocket_datestamps = new ArrayList<String>();
+    private ArrayList<Double> decoded_rocket_altitudes = new ArrayList<Double>();
+    private ArrayList<Integer> decoded_rocket_satellites = new ArrayList<Integer>();
+    private ArrayList<Double> decoded_rocket_voltages = new ArrayList<Double>();
     private final String[] check_letters={"A","O","T","H","S","V"};
     private UsbSerialPort port;
     private double user_altitude;
@@ -49,7 +51,14 @@ public class Predict extends Thread implements Runnable{
 
         return raw_packets;
     }
-
+    public String getNiceData() {
+        //String lastLong = new String(String.valueOf(decoded_rocket_longitudes.get(decoded_rocket_longitudes.size() - 1)));
+        if (decoded_rocket_latitudes.size() - 1 >=0) {
+            return new String(String.valueOf(decoded_rocket_latitudes.get(decoded_rocket_latitudes.size() - 1)));// + " " +lastLong;
+        } else {
+            return "";
+        }
+    }
     public void read_one_time() {  // might rename this, whatever to get it working
         //This method needs to run on a new thread, it will watch the serial connection for new
         // bytes and dispatch the parsePacket method to update the Predict class's data and send
@@ -83,8 +92,8 @@ public class Predict extends Thread implements Runnable{
                 newpacket="";
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
-                raw_packets.add(split_packets[1]);
-                newpacket = split_packets[2];
+                raw_packets.add(split_packets[0]);
+                newpacket = split_packets[1];
 
             }
             parsePacket();
@@ -93,27 +102,7 @@ public class Predict extends Thread implements Runnable{
         }
         }
     }
-//    public void addPacket() {
-//        // Adds a packet to our list of packets, and begins a new prediction
-//        createPacketString();
-//        this.raw_packets.add( lastpacketString);
-//        // TODO add function to convert raw packets into list of coords and altitudes
-//
-//        // regex or something to convert/tokenize the string into individual values
-//
-//        parsePacket();   // append those values onto our lists of altitudes, voltages, longitides, latitudes
-//        // call the extrapolate function to update the prediction
-//        if (number_of_good_packets > 1) {
-//            extrapolate();
-//        }
-//    }
 
-//    private void createPacketString() {
-//        byte[] slice = new byte[newpacketlength];
-//        System.arraycopy(newpacket, 0, slice, 0, slice.length);
-//        lastpacketString = new String(slice, StandardCharsets.UTF_8);
-//
-//    }
     public void parsePacket() { //this method parses a given packet for our data, and if its good, updates our list of data
         //A42.558071  ,O-83.180877 ,T12:00:19,H02000.9,S13,V8.12
         // A sample packet, lAt, lOng, Time, Height, Satellites, Voltage
@@ -131,8 +120,11 @@ public class Predict extends Thread implements Runnable{
             StringTokenizer telemetryTokens=new StringTokenizer(lastpacketString,","); //substring is used to remove the identification character
             if (telemetryTokens.countTokens() == check_letters.length) { //make sure we have as many telemetry numbers as we expect before trying to store their values into our pseudo database
 
+                Log.w("Predict",lastpacketString);
                 number_of_good_packets++;
-                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                // TODO Fix the decoding, its off by several orders of magnitude, maybe try to put these values in a string then send to the textview?
+                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(5))); // null at the beginning so start at index 5
+
                 decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
                 decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1)); //TODO parse this time of format T12:00:19 into the java date format for math reasons
                 decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
@@ -185,29 +177,16 @@ public class Predict extends Thread implements Runnable{
     }
 
     private void extrapolate() {
-        // TODO add math to extrapolate data points down to ground level, and set our current landing prediction
 
-        // times
-
-        // lats
-
-        //longs
-
-        //alts
-
-        //user alt
-
-        // function of lat output vs altitude input
-
-        //function of long output vs altitude input
-
-        // run both functions at lat = 0, or alt = user alt
         double landingLat=linear_interp(Doubles.toArray(decoded_rocket_latitudes), Doubles.toArray(decoded_rocket_altitudes),user_altitude);
         double landingLong=linear_interp(Doubles.toArray(decoded_rocket_longitudes), Doubles.toArray(decoded_rocket_altitudes),user_altitude);
         // set values as our landing prediction
-        landing_prediction_coords = landingLat + "" + landingLong;
+        final DecimalFormat df = new DecimalFormat("00.00000");
+        landing_prediction_coords = df.format(landingLat) + ", " + df.format(landingLong);
         //maybe set a UI indicator showing that packets have been recieved, decoded, and that our prediction is good and ready for use
     }
+
+
 
     private boolean any(boolean[] myBooleanArray) {
         for (boolean value : myBooleanArray) {
