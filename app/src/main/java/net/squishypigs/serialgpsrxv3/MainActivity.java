@@ -98,7 +98,9 @@ public class MainActivity extends AppCompatActivity {
                 addMessage(predict.getNiceData());
                 TextView landing_prediction_area=findViewById(R.id.landing_prediction_area);
                 landing_prediction =predict.getLanding_prediction_coords();
-                landing_prediction_area.setText("Landing Prediction: "+ landing_prediction);
+                landing_prediction_area.setText("Landing Prediction:\n"+ landing_prediction);
+                TextView DescentGauge= findViewById(R.id.Descent_Rate_Text_view);
+                DescentGauge.setText("Descent Rate:\n"+ predict.getDescentRate());
             }
         };
         handler.postDelayed(r, 0000);
@@ -131,8 +133,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void connection_button_callback(View view) {
 
-
-        setButton();
+        if (check_connection()) {
+            setButton();
+        } else {
+            ToggleButton buttonView = findViewById(R.id.connectionButton);
+        }
 
     }
 
@@ -150,10 +155,14 @@ public class MainActivity extends AppCompatActivity {
                 if (port.isOpen()) {
                     try{port.close();} catch (IOException e) {
                         e.printStackTrace();
+                        ImageView iv = findViewById(R.id.connectedStar);
+                        iv.setVisibility(View.INVISIBLE);
+                        buttonView.setChecked(false);
                     }
 
                     ImageView iv = findViewById(R.id.connectedStar);
                     iv.setVisibility(View.INVISIBLE);
+                    buttonView.setChecked(false);
                 }
             }
         }
@@ -162,12 +171,13 @@ public class MainActivity extends AppCompatActivity {
     public void clearpackets_callback(View view) {
         TextView packet_area = findViewById(R.id.packet_text_view);
         packet_area.setText("");
+        predict.resetPredict();
     }
 
     public boolean check_connection() {
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
-        ToggleButton buttonView = findViewById(R.id.connectionButton);
+        //ToggleButton buttonView = findViewById(R.id.connectionButton);
         return !availableDrivers.isEmpty();
     }
     public void start_connection()  {
@@ -186,6 +196,8 @@ public class MainActivity extends AppCompatActivity {
                 // if  all the checks have passed, then connect, and also show the user that the connection was successful
                 port.open(connection);
                 port.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+                port.setDTR(false);
+                port.setRTS(true);
                 ImageView iv = findViewById(R.id.connectedStar);
                 iv.setVisibility(View.VISIBLE);
                 buttonView.setChecked(true);
@@ -213,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onRunError(Exception e) {
 
                     }
+
                 });
                 //return usbSIoManager;
                 //begin_watching_serial(); //<-- here the serial watcher thread will be ran
@@ -231,9 +244,9 @@ public class MainActivity extends AppCompatActivity {
     private void addMessage(String msg) {
 
         TextView packet_area= findViewById(R.id.packet_text_view);
-        packet_area.setText(msg);
+        packet_area.setText(msg+ "\n");
         // append the new string
-        packet_area.append(msg + "\n");
+        //packet_area.append(msg ); //this is for appending, which I dont need atm
         // find the amount we need to scroll.  This works by
         // asking the TextView's internal layout for the position
         // of the final line and then subtracting the TextView's height

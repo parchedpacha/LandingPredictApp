@@ -8,6 +8,18 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/Descent_Rate_Text_view"
+        android:layout_width="191dp"
+        android:layout_height="61dp"
+        android:text="Descent Rate:"
+        android:textAllCaps="false"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/landing_prediction_area" />
+
+    <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,14 +27,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/user_altitude_edit_text"
         app:layout_constraintStart_toEndOf="@+id/user_altitude_edit_text"
         app:layout_constraintTop_toTopOf="@+id/user_altitude_edit_text" />
-
-    <Space
-        android:id="@+id/space"
-        android:layout_width="102dp"
-        android:layout_height="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <Space
         android:id="@+id/space2"
@@ -37,36 +41,32 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="44dp"
         android:onClick="send_to_gmaps_callback"
         android:text="@string/landing_prediction_gmaps_btn_txt"
-        app:layout_constraintBottom_toTopOf="@+id/space"
+        app:layout_constraintBottom_toTopOf="@+id/clearButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/landing_prediction_area"
-        android:layout_width="349dp"
-        android:layout_height="64dp"
+        android:layout_width="219dp"
+        android:layout_height="61dp"
         android:text="@string/landing_prediction"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toTopOf="@+id/button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="365dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="376dp"
+        android:layout_height="307dp"
         android:fillViewport="true"
         android:rotationX="0"
         android:scrollbarStyle="insideOverlay"
         android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/space2">
@@ -79,11 +79,12 @@
             <TextView
                 android:id="@+id/packet_text_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="307dp"
                 android:accessibilityHeading="false"
                 android:accessibilityLiveRegion="none"
                 android:justificationMode="none"
                 android:keepScreenOn="true"
+                android:rotationX="0"
                 android:text="@string/landing_guess_text"
                 android:textAlignment="textStart"
                 android:textAllCaps="false"
@@ -142,7 +143,6 @@
         android:id="@+id/connectionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:capitalize="none"
         android:clickable="true"
         android:onClick="connection_button_callback"
@@ -150,8 +150,7 @@
         android:textOff="Connect"
         android:textOn="CONNECTED"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/readbutton"
@@ -165,9 +164,11 @@
         android:id="@+id/clearButton"
         android:layout_width="113dp"
         android:layout_height="49dp"
+        android:layout_marginEnd="8dp"
+        android:includeFontPadding="false"
         android:onClick="clearpackets_callback"
+        android:text="Clear"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/readbutton"
-        tools:text="@string/ClearButton" />
+        app:layout_constraintEnd_toStartOf="@+id/readbutton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
