@@ -7,11 +7,14 @@ import android.util.Log;
 import com.google.common.primitives.Doubles;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 
+import org.jetbrains.annotations.Contract;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -19,7 +22,7 @@ public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<String>();
     private byte[] bytebuffer;
     private String newpacket;
-
+    private Location userLocation;
     private int number_of_good_packets=0, satellites;
     private String landing_prediction_coords;
     private ArrayList<Double> decoded_rocket_latitudes = new ArrayList<Double>();
@@ -40,7 +43,7 @@ public class Predict extends Thread implements Runnable{
 
     public String getDescentRate() {
         final DecimalFormat df = new DecimalFormat("###.0");
-        return String.valueOf(df.format(descent_rate*-1) + "ft/sec");
+        return String.valueOf(df.format(descent_rate*-1) + " m/sec");
     }
     public void resetPredict() {
         decoded_rocket_latitudes = new ArrayList<Double>();
@@ -61,12 +64,26 @@ public class Predict extends Thread implements Runnable{
             resetPredict();
         }
     }
+    public String getLastPackets() {
+        int end = raw_packets.size()-1;
+        int start = end-5;
+
+        if (start <0){ start = 0;}
+        ArrayList<String> packets = new ArrayList<>(raw_packets.subList(start,end)) ;
+
+        return packets.toString();
+    }
     public String getLanding_prediction_coords() {
         return landing_prediction_coords;
+    }
+    public void setUserLocation(Location location) {
+        this.userLocation = location;
+        this.setUser_altitude(location.getAltitude());
     }
     public void setUser_altitude(double user_altitude) {
         this.user_altitude = user_altitude;
     }
+
     public double getUser_altitude() {
         return user_altitude;
     }
@@ -204,11 +221,13 @@ public class Predict extends Thread implements Runnable{
         //Log.i("Predict",String.valueOf((altitudes[altitudes.length-1] - user_altitude)/slope + locations[locations.length-1]));
         return (altitudes[altitudes.length-1] - user_altitude)/slope_answer + locations[locations.length-1];
     }
+
     private double slope(double[] x, double[] y){
         double ans =0;
         for (int i=0;i< x.length-1;i++) { //MUST  stop 1 before length because this for loop accesses two indexes at once
             ans +=  (y[i+1]-y[i])/(x[i+1]-x[i] );
         }
+        Log.i("Slope", Arrays.toString(x) + Arrays.toString(y));
         ans=ans/(x.length-1);
         return ans;
     }

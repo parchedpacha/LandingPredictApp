@@ -3,19 +3,26 @@ package net.squishypigs.serialgpsrxv3;
 import static android.content.pm.ActivityInfo.*;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.pm.PackageManager;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,23 +30,34 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
     public Predict predict;
     public UsbSerialPort port;
+    public Location userLocation;
     public Handler mainLooper;
     public SerialInputOutputManager usbSIoManager;
     public Thread watcherThread;
     public Runnable runnable;
-    public String landing_prediction ="42.561996,-83.162815";
+    public String landing_prediction = "42.561996,-83.162815",TAG = "Main Activity";
+    int LOCATION_REQUEST_CODE = 10001;
+    FusedLocationProviderClient fusedLocationProviderClient;
+
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         predict = new Predict(100.0);
-
-        EditText User_alt_ET =  findViewById(R.id.user_altitude_edit_text);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        EditText User_alt_ET = findViewById(R.id.user_altitude_edit_text);
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         // I do not want to sort out rotations and stuff, plus the users phone might intentionally
         // have its orientation screwed with and need to maintain functionality. For instance, pointing the user's
@@ -58,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         // SERIAL TRASH ----------------------------------------------------------------------------
         setButton();
         if (check_connection()) {
-             start_connection();
+            start_connection();
             // TODO I think I need to add the listener declaration in here, not quite sure how
         }
 
@@ -75,32 +93,32 @@ public class MainActivity extends AppCompatActivity {
         };
         User_alt_ET.setOnFocusChangeListener(listener);
 
-        @SuppressLint("SetTextI18n") View.OnClickListener readButtonListener = (v) -> {
+        @SuppressLint("SetTextI18n") View.OnClickListener readButtonListener = (v) -> { // update user altitude when user stops having cursor in altitude edit text box
             //I could not give any less of a f*** about the concatenation warning
             predict.read_one_time();
-            List<String> allpackets= predict.getRaw_packets();
-            TextView packet_area= findViewById(R.id.packet_text_view);
+            List<String> allpackets = predict.getRaw_packets();
+            TextView packet_area = findViewById(R.id.packet_text_view);
             packet_area.setText(String.valueOf(allpackets));
-            TextView landing_prediction_area=findViewById(R.id.landing_prediction_area);
-            landing_prediction =predict.getLanding_prediction_coords();
-            landing_prediction_area.setText("Landing Prediction: "+ landing_prediction);
+            TextView landing_prediction_area = findViewById(R.id.landing_prediction_area);
+            landing_prediction = predict.getLanding_prediction_coords();
+            landing_prediction_area.setText("Landing Prediction: " + landing_prediction);
         };
         Button readButton = findViewById(R.id.readbutton);
         readButton.setOnClickListener(readButtonListener);
         //mainLooper = new Handler(Looper.getMainLooper());
 
-        Handler handler =new Handler();
+        Handler handler = new Handler();
         final Runnable r = new Runnable() {
             public void run() {
                 handler.postDelayed(this, 500);
                 //List<String> allpackets= predict.getRaw_packets();
                 //addMessage(String.valueOf(allpackets));
-                addMessage(predict.getNiceData());
-                TextView landing_prediction_area=findViewById(R.id.landing_prediction_area);
-                landing_prediction =predict.getLanding_prediction_coords();
-                landing_prediction_area.setText("Landing Prediction:\n"+ landing_prediction);
-                TextView DescentGauge= findViewById(R.id.Descent_Rate_Text_view);
-                DescentGauge.setText("Descent Rate:\n"+ predict.getDescentRate());
+                addMessage(predict.getLastPackets());
+                TextView landing_prediction_area = findViewById(R.id.landing_prediction_area);
+                landing_prediction = predict.getLanding_prediction_coords();
+                landing_prediction_area.setText("Landing Prediction:\n" + landing_prediction);
+                TextView DescentGauge = findViewById(R.id.Descent_Rate_Text_view);
+                DescentGauge.setText("Descent Rate:\n" + predict.getDescentRate());
             }
         };
         handler.postDelayed(r, 0000);
@@ -112,12 +130,71 @@ public class MainActivity extends AppCompatActivity {
     // TODO Add math for generating landing location
     // TODO add precise location permission / some way to get current altitude
 
-//    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
+    protected void onStart() {
+        super.onStart();
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            getLastLocation();
+        } else {
+            askForLocationPermission();
+        }
+    }
+    private void askForLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)) {
+                Log.i(TAG, "need to ask for permission");
+                ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+            } else {
+                ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode ==LOCATION_REQUEST_CODE) {
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission granted
+                getLastLocation();
+            } else {
+                //permission not granted
+
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void getLastLocation() {
+        @SuppressLint("MissingPermission") Task<Location> locationTask = fusedLocationProviderClient.getLastLocation();
+        locationTask.addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    predict.setUserLocation(location);
+                    EditText user_alt= findViewById(R.id.user_altitude_edit_text);
+                    DecimalFormat df  = new DecimalFormat("###.0");
+                    user_alt.setText(df.format(location.getAltitude()));
+                } else {
+                    Log.i(TAG,"Null Location");
+                }
+            }
+        });
+        locationTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e(TAG,"onFailure" + e.getLocalizedMessage());
+            }
+        });
+
+
+
+
+    }
+    //    public void onNewData(byte[] data) { //this is the event listener to get data from the USB serial and stuff it into predictor
 //        predict.collectRawBytes(data);
 //    }
 
     public void send_to_gmaps_callback(View app) {
-        if (!(landing_prediction ==null)) {
+        if (landing_prediction !=null) {
             Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
 
             Intent mapIntent = new Intent(Intent.ACTION_VIEW, location); // use the URI to create out intent

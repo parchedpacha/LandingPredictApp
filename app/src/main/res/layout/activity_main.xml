@@ -9,14 +9,16 @@
 
     <TextView
         android:id="@+id/Descent_Rate_Text_view"
-        android:layout_width="191dp"
+        android:layout_width="0dp"
         android:layout_height="61dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:text="Descent Rate:"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/landing_prediction_area" />
 
     <TextView
@@ -51,8 +53,9 @@
 
     <TextView
         android:id="@+id/landing_prediction_area"
-        android:layout_width="219dp"
+        android:layout_width="210dp"
         android:layout_height="61dp"
+        android:layout_marginStart="8dp"
         android:text="@string/landing_prediction"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
@@ -90,7 +93,8 @@
                 android:textAllCaps="false"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textDirection="ltr"
-                android:textIsSelectable="true" />
+                android:textIsSelectable="true"
+                android:textSize="14sp" />
         </LinearLayout>
     </ScrollView>
 
@@ -170,5 +174,16 @@
         android:text="Clear"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/readbutton" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toStartOf="@+id/Descent_Rate_Text_view"
+        app:layout_constraintStart_toEndOf="@+id/landing_prediction_area"
+        app:layout_constraintTop_toBottomOf="@+id/user_altitude_edit_text"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
