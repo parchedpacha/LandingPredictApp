@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void askForLocationPermission() {
+        // https://www.youtube.com/watch?v=rNYaEFl6Fms showed me how to do this, at some point I will encapsulate this whole shitty location process into another file
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)) {
                 Log.i(TAG, "need to ask for permission");
@@ -155,9 +156,6 @@ public class MainActivity extends AppCompatActivity {
             if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // permission granted
                 getLastLocation();
-            } else {
-                //permission not granted
-
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -296,11 +294,11 @@ public class MainActivity extends AppCompatActivity {
                     /**
                      * Called when {@link SerialInputOutputManager#run()} aborts due to an error.
                      *
-                     * @param e
+                     * @param e the error
                      */
                     @Override
                     public void onRunError(Exception e) {
-
+                        Log.e("Serial Listener (I made)", "Error" + e.getLocalizedMessage());
                     }
 
                 });
