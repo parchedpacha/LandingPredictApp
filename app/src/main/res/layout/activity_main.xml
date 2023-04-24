@@ -13,7 +13,7 @@
         android:layout_height="61dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Descent Rate:"
+        android:text="@string/DescentRateLabel"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toTopOf="@+id/button"
@@ -43,13 +43,11 @@
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="8dp"
         android:onClick="send_to_gmaps_callback"
         android:text="@string/landing_prediction_gmaps_btn_txt"
         app:layout_constraintBottom_toTopOf="@+id/clearButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/landing_prediction_area"
@@ -64,8 +62,10 @@
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="376dp"
-        android:layout_height="307dp"
+        android:layout_width="365dp"
+        android:layout_height="431dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:fillViewport="true"
         android:rotationX="0"
         android:scrollbarStyle="insideOverlay"
@@ -82,7 +82,7 @@
             <TextView
                 android:id="@+id/packet_text_view"
                 android:layout_width="match_parent"
-                android:layout_height="307dp"
+                android:layout_height="match_parent"
                 android:accessibilityHeading="false"
                 android:accessibilityLiveRegion="none"
                 android:justificationMode="none"
@@ -109,7 +109,7 @@
         android:inputType="numberDecimal"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:text="100"
+        android:text="@string/UserDefaultAltitude"
         android:textAllCaps="false"
         app:layout_constraintBottom_toTopOf="@+id/landing_prediction_area"
         app:layout_constraintEnd_toEndOf="parent"
@@ -120,7 +120,8 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Altitude"
+        android:labelFor="@id/user_altitude_edit_text"
+        android:text="@string/UserAltitudeLabel"
         app:layout_constraintBottom_toBottomOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toStartOf="@+id/user_altitude_edit_text"
         app:layout_constraintTop_toTopOf="@+id/user_altitude_edit_text" />
@@ -129,15 +130,17 @@
         android:id="@+id/disconnectedStar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/connectionButton"
-        app:layout_constraintStart_toEndOf="@+id/connectionButton"
-        app:layout_constraintTop_toTopOf="@+id/connectionButton"
+        android:layout_marginStart="8dp"
+        android:contentDescription="Star Off"
+        app:layout_constraintBottom_toTopOf="@+id/connectionButton"
+        app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@android:drawable/btn_star_big_off" />
 
     <ImageView
         android:id="@+id/connectedStar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="Star On"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/disconnectedStar"
         app:layout_constraintStart_toStartOf="@+id/disconnectedStar"
@@ -147,33 +150,22 @@
         android:id="@+id/connectionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:capitalize="none"
         android:clickable="true"
         android:onClick="connection_button_callback"
-        android:text="ToggleButton"
         android:textOff="Connect"
         android:textOn="CONNECTED"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/readbutton"
+        android:id="@+id/clearButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Read Once"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
-        android:id="@+id/clearButton"
-        android:layout_width="113dp"
-        android:layout_height="49dp"
-        android:layout_marginEnd="8dp"
         android:includeFontPadding="false"
         android:onClick="clearpackets_callback"
         android:text="Clear"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/readbutton" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <View
         android:id="@+id/divider"
@@ -185,5 +177,25 @@
         app:layout_constraintStart_toEndOf="@+id/landing_prediction_area"
         app:layout_constraintTop_toBottomOf="@+id/user_altitude_edit_text"
         app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/CopyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/CopyLastCoords"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/clearButton" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/PacketLabels"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
+        app:layout_constraintEnd_toEndOf="@+id/scrollView2"
+        app:layout_constraintStart_toStartOf="@+id/scrollView2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

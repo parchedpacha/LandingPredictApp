@@ -93,18 +93,13 @@ public class MainActivity extends AppCompatActivity {
         };
         User_alt_ET.setOnFocusChangeListener(listener);
 
-        @SuppressLint("SetTextI18n") View.OnClickListener readButtonListener = (v) -> { // update user altitude when user stops having cursor in altitude edit text box
+        @SuppressLint("SetTextI18n") View.OnClickListener copyButtonListener = (v) -> { // update user altitude when user stops having cursor in altitude edit text box
             //I could not give any less of a f*** about the concatenation warning
-            predict.read_one_time();
-            List<String> allpackets = predict.getRaw_packets();
-            TextView packet_area = findViewById(R.id.packet_text_view);
-            packet_area.setText(String.valueOf(allpackets));
-            TextView landing_prediction_area = findViewById(R.id.landing_prediction_area);
-            landing_prediction = predict.getLanding_prediction_coords();
-            landing_prediction_area.setText("Landing Prediction: " + landing_prediction);
+            //predict.read_one_time();
+            CopyLandingCoords();
         };
-        Button readButton = findViewById(R.id.readbutton);
-        readButton.setOnClickListener(readButtonListener);
+        Button CopyButton = findViewById(R.id.CopyButton);
+        CopyButton.setOnClickListener(copyButtonListener);
         //mainLooper = new Handler(Looper.getMainLooper());
 
         Handler handler = new Handler();
@@ -119,16 +114,17 @@ public class MainActivity extends AppCompatActivity {
                 landing_prediction_area.setText("Landing Prediction:\n" + landing_prediction);
                 TextView DescentGauge = findViewById(R.id.Descent_Rate_Text_view);
                 DescentGauge.setText("Descent Rate:\n" + predict.getDescentRate());
+                Button Connection = findViewById(R.id.connectionButton);
+
             }
         };
         handler.postDelayed(r, 0000);
 
     }
-    // TODO Add serial Opening function
-    // TODO Add event driven serial data read
-    // TODO add serial data parser and Quality Control
-    // TODO Add math for generating landing location
-    // TODO add precise location permission / some way to get current altitude
+
+
+
+
 
     protected void onStart() {
         super.onStart();
@@ -136,6 +132,18 @@ public class MainActivity extends AppCompatActivity {
             getLastLocation();
         } else {
             askForLocationPermission();
+        }
+    }
+
+    void CopyLandingCoords() {
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText(predict.getLanding_prediction_coords());
+        } else {
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("Landing Prediction",predict.getLanding_prediction_coords());
+            clipboard.setPrimaryClip(clip);
         }
     }
     private void askForLocationPermission() {

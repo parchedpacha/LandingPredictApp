@@ -19,22 +19,23 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 public class Predict extends Thread implements Runnable{
-    private List<String> raw_packets = new ArrayList<String>();
-    private byte[] bytebuffer;
+    private List<String> raw_packets = new ArrayList<>();
+
     private String newpacket;
-    private Location userLocation;
     private int number_of_good_packets=0, satellites;
     private String landing_prediction_coords;
-    private ArrayList<Double> decoded_rocket_latitudes = new ArrayList<Double>();
-    private ArrayList<Double> decoded_rocket_longitudes = new ArrayList<Double>();
-    private ArrayList<String> decoded_rocket_datestamps = new ArrayList<String>();
-    private ArrayList<Double> recieved_timestamps = new ArrayList<Double>();
-    private ArrayList<Double> decoded_rocket_altitudes = new ArrayList<Double>();
-    private ArrayList<Integer> decoded_rocket_satellites = new ArrayList<Integer>();
-    private ArrayList<Double> decoded_rocket_voltages = new ArrayList<Double>();
+    private ArrayList<Double> decoded_rocket_latitudes = new ArrayList<>();
+    private ArrayList<Double> decoded_rocket_longitudes = new ArrayList<>();
+    private ArrayList<String> decoded_rocket_datestamps = new ArrayList<>();
+    private ArrayList<Double> recieved_timestamps = new ArrayList<>();
+    private ArrayList<Double> decoded_rocket_altitudes = new ArrayList<>();
+    private ArrayList<Integer> decoded_rocket_satellites = new ArrayList<>();
+    private ArrayList<Double> decoded_rocket_voltages = new ArrayList<>();
     private final String[] check_letters={"A","O","T","H","S","V"};//lAt,lOng,Time,Height,Satellites,Voltage
     private UsbSerialPort port;
-    private double user_altitude,descent_slope,  voltage, descent_rate;
+    private double user_altitude;
+    private double voltage;
+    private double descent_rate;
 
 //    private double user_latitude;
 //    private double user_longitude;
@@ -43,18 +44,19 @@ public class Predict extends Thread implements Runnable{
 
     public String getDescentRate() {
         final DecimalFormat df = new DecimalFormat("###.0");
-        return String.valueOf(df.format(descent_rate*-1) + " m/sec");
+        return (df.format(descent_rate*-1) + " m/sec");
     }
     public void resetPredict() {
-        decoded_rocket_latitudes = new ArrayList<Double>();
-        decoded_rocket_longitudes = new ArrayList<Double>();
-        decoded_rocket_datestamps = new ArrayList<String>();
-        recieved_timestamps = new ArrayList<Double>();
-        decoded_rocket_altitudes = new ArrayList<Double>();
-        decoded_rocket_satellites = new ArrayList<Integer>();
-        decoded_rocket_voltages = new ArrayList<Double>();
+        decoded_rocket_latitudes = new ArrayList<>();
+        decoded_rocket_longitudes = new ArrayList<>();
+        decoded_rocket_datestamps = new ArrayList<>();
+        recieved_timestamps = new ArrayList<>();
+        decoded_rocket_altitudes = new ArrayList<>();
+        decoded_rocket_satellites = new ArrayList<>();
+        decoded_rocket_voltages = new ArrayList<>();
         descent_rate=0;
         number_of_good_packets=0;
+        raw_packets = new ArrayList<>();
         Log.i("Predict", "RESET");
     }
     public void check_auto_reset() {
@@ -65,19 +67,30 @@ public class Predict extends Thread implements Runnable{
         }
     }
     public String getLastPackets() {
-        int end = raw_packets.size()-1;
-        int start = end-5;
+        if (raw_packets.size() >0) {
+            int end = raw_packets.size() - 1;
+            int start = end - 5;
 
-        if (start <0){ start = 0;}
-        ArrayList<String> packets = new ArrayList<>(raw_packets.subList(start,end)) ;
+            if (start < 0) {
+                start = 0;
+            }
+            ArrayList<String> packets = new ArrayList<>(raw_packets.subList(start, end));
+            String ReturnPackets=packets.toString();
+            ReturnPackets=ReturnPackets.replace("[","");
+            ReturnPackets=ReturnPackets.replace("]","");
+            ReturnPackets=ReturnPackets.replace("\n, ","\n");
+            ReturnPackets =ReturnPackets.replace("null","");
 
-        return packets.toString();
+            return ReturnPackets;
+        }
+        else {
+            return "No Saved Packets";
+        }
     }
     public String getLanding_prediction_coords() {
         return landing_prediction_coords;
     }
     public void setUserLocation(Location location) {
-        this.userLocation = location;
         this.setUser_altitude(location.getAltitude());
     }
     public void setUser_altitude(double user_altitude) {
@@ -95,30 +108,12 @@ public class Predict extends Thread implements Runnable{
     public String getNiceData() {
         //String lastLong = new String(String.valueOf(decoded_rocket_longitudes.get(decoded_rocket_longitudes.size() - 1)));
         if (decoded_rocket_latitudes.size() - 1 >=0) {
-            return new String(String.valueOf(decoded_rocket_latitudes.get(decoded_rocket_latitudes.size() - 1)));// + " " +lastLong;
+            return  String.valueOf(decoded_rocket_latitudes.get(decoded_rocket_latitudes.size() - 1));// + " " +lastLong;
         } else {
             return "";
         }
     }
-    public void read_one_time() {  // might rename this, whatever to get it working
-        //This method needs to run on a new thread, it will watch the serial connection for new
-        // bytes and dispatch the parsePacket method to update the Predict class's data and send
-        // it to the user. Additionally the extrapolate method will be called to generate the
-        // expected landing coordinates and that will also be displayed to the user.
 
-        if (port !=null && port.isOpen()) {
-            try {
-                int newpacketlength = port.read(bytebuffer, 500);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            //swap these out with add packet to encapsulate the whole process
-            collectRawBytes(bytebuffer);
-            //addPacket();
-
-        }
-    }
 
     /** This function Runs the show
      *
@@ -140,7 +135,7 @@ public class Predict extends Thread implements Runnable{
             parsePacket();
             if (number_of_good_packets > 1) {
             extrapolate();
-            check_auto_reset();
+            //check_auto_reset();
         }
         }
     }
@@ -215,7 +210,6 @@ public class Predict extends Thread implements Runnable{
         //Log.i("EXTRAPOLATE", "Locations: " + String.valueOf(user_altitude));
 
 
-        descent_slope=slope_answer;
         // the actual landing spot isnt just x= m/b, that assumes we are starting at x=0 and decending until we hit y=0,
         // we actually are starting from our last point, so we must add that in here
         //Log.i("Predict",String.valueOf((altitudes[altitudes.length-1] - user_altitude)/slope + locations[locations.length-1]));
@@ -227,16 +221,34 @@ public class Predict extends Thread implements Runnable{
         for (int i=0;i< x.length-1;i++) { //MUST  stop 1 before length because this for loop accesses two indexes at once
             ans +=  (y[i+1]-y[i])/(x[i+1]-x[i] );
         }
-        Log.i("Slope", Arrays.toString(x) + Arrays.toString(y));
+        //Log.i("Slope", Arrays.toString(x) + Arrays.toString(y));
         ans=ans/(x.length-1);
         return ans;
     }
     private void extrapolate() {
-
-        double landingLat=linear_interp(Doubles.toArray(decoded_rocket_latitudes), Doubles.toArray(decoded_rocket_altitudes),user_altitude);
-        double landingLong=linear_interp(Doubles.toArray(decoded_rocket_longitudes), Doubles.toArray(decoded_rocket_altitudes),user_altitude);
-        descent_rate = slope(Doubles.toArray(recieved_timestamps),Doubles.toArray(decoded_rocket_altitudes));
-        Log.i("Predict","Descent Rate: " + descent_rate);
+        // the logic here determines how much of the array we want to use for prediction. if we use
+        // all of it, we will get the initial rise in hight from the launch, which will spoil our
+        // results. 5 points should be good, but 10 would be better
+        int size=decoded_rocket_latitudes.size();
+        //Log.i("Predict","Size of PacketList="+size);
+        int start,end;
+        int packetsToExtrapolate = 5;
+        if ( size==0) {
+            start = 0;
+            end =0;
+        } else if (size < packetsToExtrapolate) {
+            start=0;
+            end =size-1;
+        } else {
+            start = size- packetsToExtrapolate;
+            end = size-1;
+        }
+        //Log.i("Predict","Start="+start);
+        //Log.i("Predict","End="+end);
+        double landingLat=linear_interp(Doubles.toArray(decoded_rocket_latitudes.subList(start,end)), Doubles.toArray(decoded_rocket_altitudes.subList(start,end)),user_altitude);
+        double landingLong=linear_interp(Doubles.toArray(decoded_rocket_longitudes.subList(start,end)), Doubles.toArray(decoded_rocket_altitudes.subList(start,end)),user_altitude);
+        descent_rate = slope(Doubles.toArray(recieved_timestamps.subList(start,end)),Doubles.toArray(decoded_rocket_altitudes.subList(start,end)));
+        //Log.i("Predict","Descent Rate: " + descent_rate);
         // set values as our landing prediction
         final DecimalFormat df = new DecimalFormat("###.00000");
         landing_prediction_coords = df.format(landingLat) + ", " + df.format(landingLong);
