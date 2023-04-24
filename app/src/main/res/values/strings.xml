@@ -5,4 +5,9 @@
     <string name="landing_guess_text">Packets will Appear here</string>
     <string name="altitude_meters_label">meters</string>
     <string name="ClearButton"> Clear</string>
+    <string name="DescentRateLabel">Descent Rate:</string>
+    <string name="UserDefaultAltitude">100</string>
+    <string name="UserAltitudeLabel">Your Altitude</string>
+    <string name="PacketLabels">Latitude, Longitude, Time, Height, Satellites, Batt Voltage</string>
+    <string name="CopyLastCoords">Copy Last Coords</string>
 </resources>
