@@ -115,10 +115,16 @@ public class MainActivity extends AppCompatActivity {
                 TextView DescentGauge = findViewById(R.id.Descent_Rate_Text_view);
                 DescentGauge.setText("Descent Rate:\n" + predict.getDescentRate());
                 Button Connection = findViewById(R.id.connectionButton);
+                Connection.setText("CONNECTED");
+
+                TextView landedindicator = findViewById(R.id.LANDED_Text_view);
+                if (predict.getOnGround()) {
+                landedindicator.setVisibility(View.VISIBLE);}
+                else {landedindicator.setVisibility(View.GONE);}
 
             }
         };
-        handler.postDelayed(r, 0000);
+        handler.postDelayed(r, 0);
 
     }
 

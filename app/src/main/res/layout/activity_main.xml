@@ -8,14 +8,26 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/LANDED_Text_view"
+        android:layout_width="190dp"
+        android:layout_height="37dp"
+        android:gravity="center"
+        android:text="LANDED"
+        android:textAllCaps="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toTopOf="@+id/landing_prediction_area"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
         android:id="@+id/Descent_Rate_Text_view"
         android:layout_width="178dp"
         android:layout_height="61dp"
-        android:layout_marginBottom="32dp"
+        android:gravity="center"
         android:text="@string/DescentRateLabel"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintBottom_toTopOf="@+id/landing_prediction_area"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
@@ -50,10 +62,11 @@
 
     <TextView
         android:id="@+id/landing_prediction_area"
-        android:layout_width="210dp"
-        android:layout_height="61dp"
+        android:layout_width="292dp"
+        android:layout_height="60dp"
         android:text="@string/landing_prediction"
         android:textAllCaps="false"
+        android:gravity="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"

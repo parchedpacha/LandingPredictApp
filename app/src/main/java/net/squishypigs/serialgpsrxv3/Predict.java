@@ -37,6 +37,7 @@ public class Predict extends Thread implements Runnable{
     private double user_altitude;
     private double voltage;
     private double descent_rate;
+    private boolean onGround=false;
 
 //    private double user_latitude;
 //    private double user_longitude;
@@ -46,6 +47,10 @@ public class Predict extends Thread implements Runnable{
     public String getDescentRate() {
         final DecimalFormat df = new DecimalFormat("###.0");
         return (df.format(descent_rate*-1) + " m/sec");
+    }
+
+    public boolean getOnGround() {
+        return onGround;
     }
     public void resetPredict() {
         decoded_rocket_latitudes = new ArrayList<>();
@@ -89,7 +94,21 @@ public class Predict extends Thread implements Runnable{
         }
     }
     public String getLanding_prediction_coords() {
-        return landing_prediction_coords;
+        if ( Math.abs(descent_rate) > 0.5) {
+            //Log.i("Predict", "Good Coords");
+            onGround=false;
+            return landing_prediction_coords;
+        }
+        else if(decoded_rocket_latitudes.size() > 0) {
+            int i = decoded_rocket_latitudes.size()-1;
+            //Log.i("Predict","Landed Coords");
+            onGround=true;
+            return decoded_rocket_latitudes.get(i) + ", "+decoded_rocket_longitudes.get(i);
+        }
+        else {
+            //Log.i("Predict","No Data");
+            return "No Data";
+        }
     }
     public void setUserLocation(Location location) {
         this.setUser_altitude(location.getAltitude());
@@ -146,11 +165,17 @@ public class Predict extends Thread implements Runnable{
         // A sample packet, lAt, lOng, Time, Height, Satellites, Voltage
         // TODO make sure the string by this point is split into individual packets
         String lastpacketString = raw_packets.get(raw_packets.size() - 1);
-        Log.i("Predict", lastpacketString);
+
+        if (lastpacketString.contains("null")) { // if our string has "null" in it, we need to excise it
+            lastpacketString = lastpacketString.replace("null","");
+
+        }
+        //Log.i("Predict", lastpacketString);
         String[] parts= lastpacketString.split("[,]",0);
         boolean[] bad_fields = {false,false,false,false,false,false};
         if(parts.length !=6) { //only verify packets of correct length
             bad_fields[0]=true; // if packet is not of correct length, flag it
+            //Log.i("Predict","Fields = "+parts.length);
         }
         if (!any(bad_fields)) { // this is run if all of the fields are good
             StringTokenizer telemetryTokens=new StringTokenizer(lastpacketString,","); //substring is used to remove the identification character
@@ -159,13 +184,15 @@ public class Predict extends Thread implements Runnable{
 
                 number_of_good_packets++;
                 // TODO Fix the decoding, its off by several orders of magnitude, maybe try to put these values in a string then send to the textview?
-                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1)); //TODO parse this time of format T12:00:19 into the java date format for math reasons
-                decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken().substring(1)));
-                decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                decoded_rocket_datestamps.add(telemetryTokens.nextToken()); //TODO parse this time of format T12:00:19 into the java date format for math reasons
+                decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken()));
+                decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken()));
                 recieved_timestamps.add( (double)Instant.now().getEpochSecond());
+                int L=decoded_rocket_altitudes.size()-1;
+                //Log.i("Predict", decoded_rocket_altitudes.get(L)+",");
                 //Log.i("Predict Times", String.valueOf((double)Instant.now().getEpochSecond()));
 
 
@@ -225,10 +252,11 @@ public class Predict extends Thread implements Runnable{
         int size=decoded_rocket_latitudes.size();
         //Log.i("Predict","Size of PacketList="+size);
         int start,end;
-        Log.i("Predict","Extrapolating");
+        //Log.i("Predict","Extrapolating");
         if ( size==0) {
             start = 0;
             end =0;
+            return; // cannot extrapolate 0 datapoints haha
         } else if (size < packets_to_use) {
             start=0;
             end =size-1;
@@ -237,12 +265,12 @@ public class Predict extends Thread implements Runnable{
             end = size-1;
         }
         final DecimalFormat df = new DecimalFormat("###.00000");
-        Log.i("Predict","Start="+start);
-        Log.i("Predict","End="+end);
+        //Log.i("Predict","Start="+start);
+        //Log.i("Predict","End="+end);
         double landingLat=linear_interp(Doubles.toArray(decoded_rocket_latitudes.subList(start,end)), Doubles.toArray(decoded_rocket_altitudes.subList(start,end)),user_altitude);
         double landingLong=linear_interp(Doubles.toArray(decoded_rocket_longitudes.subList(start,end)), Doubles.toArray(decoded_rocket_altitudes.subList(start,end)),user_altitude);
         descent_rate = slope(Doubles.toArray(recieved_timestamps.subList(start,end)),Doubles.toArray(decoded_rocket_altitudes.subList(start,end)));
-        Log.i("Predict","Descent Rate: " + df.format(descent_rate));
+        //Log.i("Predict","Descent Rate: " + df.format(descent_rate));
         // set values as our landing prediction
 
         landing_prediction_coords = df.format(landingLat) + ", " + df.format(landingLong);
