@@ -2,29 +2,20 @@ package net.squishypigs.serialgpsrxv3;
 
 import android.location.Location;
 import android.util.Log;
-
-
 import com.google.common.primitives.Doubles;
-import com.hoho.android.usbserial.driver.UsbSerialPort;
-
-import org.jetbrains.annotations.Contract;
-
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
-
 public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<>();
 
     private String newpacket;
-    private int number_of_good_packets=0, satellites;
+    private int number_of_good_packets=0;
     private String landing_prediction_coords;
-    private int packets_to_use=10;
+    private final int packets_to_use=10;
     private ArrayList<Double> decoded_rocket_latitudes = new ArrayList<>();
     private ArrayList<Double> decoded_rocket_longitudes = new ArrayList<>();
     private ArrayList<String> decoded_rocket_datestamps = new ArrayList<>();
@@ -32,17 +23,11 @@ public class Predict extends Thread implements Runnable{
     private ArrayList<Double> decoded_rocket_altitudes = new ArrayList<>();
     private ArrayList<Integer> decoded_rocket_satellites = new ArrayList<>();
     private ArrayList<Double> decoded_rocket_voltages = new ArrayList<>();
-    private final String[] check_letters={"A","O","T","H","P","V"};//lAt,lOng,Time,Height,Satellites,Voltage
-    private UsbSerialPort port;
-    private double user_altitude;
-    private double voltage;
-    private double descent_rate;
+    private final String[] check_letters={"A","O","T","H","P","V"};//lAt,lOng,Time,Height,HDOP,Voltage <-- in future ill change satellites to HDOP
+
+    private double user_altitude,descent_rate;
     private boolean onGround=false;
 
-//    private double user_latitude;
-//    private double user_longitude;
-
-    //private Time
 
     public String getDescentRate() {
         final DecimalFormat df = new DecimalFormat("###.0");
@@ -65,13 +50,13 @@ public class Predict extends Thread implements Runnable{
         raw_packets = new ArrayList<>();
         Log.i("Predict", "RESET");
     }
-    public void check_auto_reset() {
-        double current_alt= decoded_rocket_altitudes.get(decoded_rocket_altitudes.size()-1);
-        double last_alt= decoded_rocket_altitudes.get(decoded_rocket_altitudes.size()-2);
-        if ( (current_alt - last_alt) > 200) {
-            resetPredict();
-        }
-    }
+//    public void check_auto_reset() {
+//        double current_alt= decoded_rocket_altitudes.get(decoded_rocket_altitudes.size()-1);
+//        double last_alt= decoded_rocket_altitudes.get(decoded_rocket_altitudes.size()-2);
+//        if ( (current_alt - last_alt) > 200) {
+//            resetPredict();
+//        }
+//    }
     public String getLastPackets() {
         if (raw_packets.size() >0) {
             int end = raw_packets.size() - 1;
@@ -117,22 +102,22 @@ public class Predict extends Thread implements Runnable{
         this.user_altitude = user_altitude;
     }
 
-    public double getUser_altitude() {
-        return user_altitude;
-    }
+//    public double getUser_altitude() {
+//        return user_altitude;
+//    }
 
-    public List<String> getRaw_packets() {
-
-        return raw_packets;
-    }
-    public String getNiceData() {
-        //String lastLong = new String(String.valueOf(decoded_rocket_longitudes.get(decoded_rocket_longitudes.size() - 1)));
-        if (decoded_rocket_latitudes.size() - 1 >=0) {
-            return  String.valueOf(decoded_rocket_latitudes.get(decoded_rocket_latitudes.size() - 1));// + " " +lastLong;
-        } else {
-            return "";
-        }
-    }
+//    public List<String> getRaw_packets() {
+//
+//        return raw_packets;
+//    }
+//    public String getNiceData() {
+//        //String lastLong = new String(String.valueOf(decoded_rocket_longitudes.get(decoded_rocket_longitudes.size() - 1)));
+//        if (decoded_rocket_latitudes.size() - 1 >=0) {
+//            return  String.valueOf(decoded_rocket_latitudes.get(decoded_rocket_latitudes.size() - 1));// + " " +lastLong;
+//        } else {
+//            return "";
+//        }
+//    }
 
 
     /** This function Runs the show
@@ -183,39 +168,55 @@ public class Predict extends Thread implements Runnable{
 
 
                 number_of_good_packets++;
-                // TODO Fix the decoding, its off by several orders of magnitude, maybe try to put these values in a string then send to the textview?
-                decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                decoded_rocket_datestamps.add(telemetryTokens.nextToken()); //TODO parse this time of format T12:00:19 into the java date format for math reasons
-                decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken()));
-                decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken()));
-                recieved_timestamps.add( (double)Instant.now().getEpochSecond());
-                int L=decoded_rocket_altitudes.size()-1;
-                //Log.i("Predict", decoded_rocket_altitudes.get(L)+",");
-                //Log.i("Predict Times", String.valueOf((double)Instant.now().getEpochSecond()));
+                boolean has_check_letters = false;
+                for (String item : check_letters) {
+                    if (lastpacketString.contains(item)) {
+                        has_check_letters=true;
+                        break;
+                    }
+                }
 
+                if (has_check_letters) {
+                    decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                    decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                    decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1));
+                    decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                    decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken().substring(1)));
+                    decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+                    recieved_timestamps.add( (double)Instant.now().getEpochSecond());
+                }
+                else{
+                    decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                    decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                    decoded_rocket_datestamps.add(telemetryTokens.nextToken());
+                    decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+                    decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken()));
+                    decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken()));
+                    recieved_timestamps.add((double) Instant.now().getEpochSecond());
 
+                    //Log.i("Predict", decoded_rocket_altitudes.get(L)+",");
+                    //Log.i("Predict Times", String.valueOf((double)Instant.now().getEpochSecond()));
+                }
             }
         }
         // ast this point we have completely parsed the packet and assigned its contents to our respective variables. Now move onto the extrapolate function
     }
 
 
-    /**
-     *
-     * @param loc Current User Location
-     */
-    public Predict(Location loc) {
-        // Setter for user location and altitude when I figure out how tf i am gonna do that
-        this.user_altitude = loc.getAltitude();
-    }
+//    /**
+//     *
+//     * @param loc Current User Location
+//     */
+//    public Predict(Location loc) {
+//        // Setter for user location and altitude when I figure out how tf i am gonna do that
+//        this.user_altitude = loc.getAltitude();
+//    }
     public Predict(Double altitude){
         this.user_altitude = altitude;
     }
-    public Predict() {
-        //the void case, for making the class exist, then updating it all later
-    }
+//    public Predict() {
+//        //the void case, for making the class exist, then updating it all later
+//    }
 
     /**
      * \
