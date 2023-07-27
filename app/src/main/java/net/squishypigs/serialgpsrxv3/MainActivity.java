@@ -32,7 +32,6 @@ import android.widget.ToggleButton;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -49,11 +48,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     public Predict predict;
     public UsbSerialPort port;
-    public Location userLocation;
-    public Handler mainLooper;
     public SerialInputOutputManager usbSIoManager;
-    public Thread watcherThread;
-    public Runnable runnable;
     public String landing_prediction = "42.561996,-83.162815",TAG = "Main Activity";
     int LOCATION_REQUEST_CODE = 10001;
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -115,7 +110,13 @@ public class MainActivity extends AppCompatActivity {
                 TextView DescentGauge = findViewById(R.id.Descent_Rate_Text_view);
                 DescentGauge.setText("Descent Rate:\n" + predict.getDescentRate());
                 Button Connection = findViewById(R.id.connectionButton);
-                Connection.setText("CONNECTED");
+                if (usbSIoManager != null) {  //
+                    if (usbSIoManager.getState() == SerialInputOutputManager.State.RUNNING) {
+                        Connection.setText("CONNECTED"); }
+                }
+                else {
+                    Connection.setText("CONNECT");
+                }
 
                 TextView landedindicator = findViewById(R.id.LANDED_Text_view);
                 if (predict.getOnGround()) {
@@ -220,15 +221,15 @@ public class MainActivity extends AppCompatActivity {
 //        predict.setUser_altitude(Double.parseDouble(user_alt.toString()) );
 //    }
 
-    public void connection_button_callback(View view) {
-
-        if (check_connection()) {
-            setButton();
-        } else {
-            ToggleButton buttonView = findViewById(R.id.connectionButton);
-        }
-
-    }
+//    public void connection_button_callback(View view) {
+//
+//        if (check_connection()) {
+//            setButton();
+//        } else {
+//            ToggleButton buttonView = findViewById(R.id.connectionButton);
+//        }
+//
+//    }
 
     public void setButton()  { // when the user presses the connect button, try to
         ToggleButton buttonView = findViewById(R.id.connectionButton);
