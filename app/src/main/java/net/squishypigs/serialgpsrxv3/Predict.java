@@ -28,6 +28,10 @@ public class Predict extends Thread implements Runnable{
     private double user_altitude,descent_rate;
     private boolean onGround=false;
 
+    public Predict(Double altitude){
+        this.user_altitude = altitude;
+    }
+
 
     public String getDescentRate() {
         final DecimalFormat df = new DecimalFormat("###.0");
@@ -211,9 +215,7 @@ public class Predict extends Thread implements Runnable{
 //        // Setter for user location and altitude when I figure out how tf i am gonna do that
 //        this.user_altitude = loc.getAltitude();
 //    }
-    public Predict(Double altitude){
-        this.user_altitude = altitude;
-    }
+
 //    public Predict() {
 //        //the void case, for making the class exist, then updating it all later
 //    }
