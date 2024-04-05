@@ -1,5 +1,7 @@
 package net.squishypigs.serialgpsrxv3;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.util.Log;
 import com.google.common.primitives.Doubles;
@@ -24,13 +26,31 @@ public class Predict extends Thread implements Runnable{
     private ArrayList<Integer> decoded_rocket_satellites = new ArrayList<>();
     private ArrayList<Double> decoded_rocket_voltages = new ArrayList<>();
     private final String[] check_letters={"A","O","T","H","P","V"};//lAt,lOng,Time,Height,HDOP,Voltage <-- in future ill change satellites to HDOP
+    private DataStore datastore;
+
+    // Get SharedPreferences object
+
 
     private double user_altitude,descent_rate;
     private boolean onGround=false;
 
-    public Predict(Double altitude){
+    public Predict(Double altitude,DataStore datastore){
         this.user_altitude = altitude;
+        this.datastore=datastore;
     }
+
+    @Override
+    public void run() {
+
+    }
+
+    private void saveLast10Packets() {
+        datastore.saveString("last10packets",getLastPackets());
+    }
+    private String returnLastPackets() {
+        return datastore.getString("last10packets","No Saved Packets");
+    }
+
 
 
     public String getDescentRate() {
@@ -62,7 +82,8 @@ public class Predict extends Thread implements Runnable{
 //        }
 //    }
     public String getLastPackets() {
-        if (raw_packets.size() >0) {
+
+        if (!raw_packets.isEmpty()) {
             int end = raw_packets.size() - 1;
             int start = end - packets_to_use;
 
@@ -78,7 +99,10 @@ public class Predict extends Thread implements Runnable{
 
             return ReturnPackets;
         }
-        else {
+        else if (!returnLastPackets().isEmpty()) {
+            return returnLastPackets();
+
+        } else {
             return "No Saved Packets";
         }
     }
@@ -88,7 +112,7 @@ public class Predict extends Thread implements Runnable{
             onGround=false;
             return landing_prediction_coords;
         }
-        else if(decoded_rocket_latitudes.size() > 0) {
+        else if(!decoded_rocket_latitudes.isEmpty()) {
             int i = decoded_rocket_latitudes.size()-1;
             //Log.i("Predict","Landed Coords");
             onGround=true;
@@ -135,11 +159,12 @@ public class Predict extends Thread implements Runnable{
             if (newpacket.endsWith("\n")) { //if it ends on that newline, clear the buffer
                 raw_packets.add(newpacket);
                 newpacket="";
+                saveLast10Packets();
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
                 raw_packets.add(split_packets[0]);
                 newpacket = split_packets[1];
-
+                saveLast10Packets();
             }
             parsePacket();
             if (number_of_good_packets > 1) {

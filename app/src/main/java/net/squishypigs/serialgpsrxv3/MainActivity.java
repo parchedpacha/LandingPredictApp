@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -59,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        predict = new Predict(100.0);
+        DataStore dataStore = new DataStore(this);
+        predict = new Predict(100.0, dataStore);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         EditText User_alt_ET = findViewById(R.id.user_altitude_edit_text);
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
@@ -208,12 +210,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void send_to_gmaps_callback(View app) {
         if (landing_prediction !=null) {
-            Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
+            if (!landing_prediction.contains("No Data")) {
+                Uri location = Uri.parse("geo:0,0?q=" + landing_prediction + "(landing+prediction)"); // z param is zoom level, mor Z == more zoom
 
-            Intent mapIntent = new Intent(Intent.ACTION_VIEW, location); // use the URI to create out intent
-            startActivity(mapIntent); // tell android to launch the map
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, location); // use the URI to create out intent
+                startActivity(mapIntent); // tell android to launch the map
+            } else {
+                Toast.makeText(this,"No Prediction!",Toast.LENGTH_SHORT).show();
+            }
         }
-
     }
 //    public void user_altitude_set_callback(View app) {
 //        TextView user_alt = findViewById(R.id.user_altitude_edit_text);
@@ -221,15 +226,16 @@ public class MainActivity extends AppCompatActivity {
 //        predict.setUser_altitude(Double.parseDouble(user_alt.toString()) );
 //    }
 
-//    public void connection_button_callback(View view) {
-//
-//        if (check_connection()) {
-//            setButton();
-//        } else {
-//            ToggleButton buttonView = findViewById(R.id.connectionButton);
-//        }
-//
-//    }
+    public void connection_button_callback(View view) {
+
+        if (check_connection()) {
+            setButton();
+        } else {
+            ToggleButton buttonView = findViewById(R.id.connectionButton);
+            buttonView.setChecked(false);
+        }
+
+    }
 
     public void setButton()  { // when the user presses the connect button, try to
         ToggleButton buttonView = findViewById(R.id.connectionButton);
