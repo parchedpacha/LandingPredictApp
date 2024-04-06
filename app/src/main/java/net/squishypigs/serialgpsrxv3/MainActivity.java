@@ -233,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             ToggleButton buttonView = findViewById(R.id.connectionButton);
             buttonView.setChecked(false);
+            Toast.makeText(this,"No USB Device!",Toast.LENGTH_SHORT).show();
         }
 
     }
