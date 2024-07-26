@@ -4,9 +4,11 @@ import static android.content.pm.ActivityInfo.*;
 
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 
 import android.Manifest;
@@ -23,6 +25,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -44,23 +47,26 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Objects;
 
 
 public class MainActivity extends AppCompatActivity {
+    public DrawerLayout drawerLayout;
+    public ActionBarDrawerToggle actionBarDrawerToggle;
     public Predict predict;
     public UsbSerialPort port;
     public SerialInputOutputManager usbSIoManager;
     public String landing_prediction = "42.561996,-83.162815",TAG = "Main Activity";
     int LOCATION_REQUEST_CODE = 10001;
     FusedLocationProviderClient fusedLocationProviderClient;
-
+    public DataStore dataStore;
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DataStore dataStore = new DataStore(this);
+        dataStore = new DataStore(this);
         predict = new Predict(100.0, dataStore);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         EditText User_alt_ET = findViewById(R.id.user_altitude_edit_text);
@@ -69,7 +75,11 @@ public class MainActivity extends AppCompatActivity {
         // have its orientation screwed with and need to maintain functionality. For instance, pointing the user's
         // phone up to the sky should not cause the app to rotate at all.
 
-
+        drawerLayout = findViewById(R.id.my_drawer_layout);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         // SERIAL TRASH ----------------------------------------------------------------------------
         setButton();
         if (check_connection()) {
@@ -122,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
                 TextView landedindicator = findViewById(R.id.LANDED_Text_view);
                 if (predict.getOnGround()) {
-                landedindicator.setVisibility(View.VISIBLE);}
+                    landedindicator.setVisibility(View.VISIBLE);}
                 else {landedindicator.setVisibility(View.GONE);}
 
             }
@@ -131,7 +141,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
+        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true; //TODO add in code to switch to/from history tab
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 
 
@@ -350,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
         //final int scrollAmount = packet_area.getLayout().getLineTop(packet_area.getLineCount()) - packet_area.getHeight();
         // if there is no need to scroll, scrollAmount will be <=0
 
-            packet_area.scrollTo(0, 0); //packet_area.getHeight()
+        packet_area.scrollTo(0, 0); //packet_area.getHeight()
     }
 
 }
