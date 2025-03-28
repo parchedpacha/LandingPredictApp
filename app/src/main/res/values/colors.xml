@@ -9,6 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bootup_brown">#FFe9b028</color>
     <color name="lacking_grey">#FF838383</color>
-    <color name="warning_orange">#FFff2600</color>
+    <color name="warning_orange">#FFFF5733</color>
     <color name="good_green">#FF30b306</color>
 </resources>

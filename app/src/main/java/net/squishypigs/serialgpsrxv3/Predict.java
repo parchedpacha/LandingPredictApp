@@ -31,7 +31,7 @@ public class Predict extends Thread implements Runnable{
     private final String[] check_letters={"A","O","T","H","P","V"};//lAt,lOng,Time,Height,HDOP,Voltage <-- in future ill change satellites to HDOP
     private DataStore datastore;
     private int last_packet_quality = 0; //0 = no packet, 1 = bad packet, 2 = good packet, 3 == in bootup
-    private long last_good_packet_time = 0; //record timestamp of last good packet
+    private long last_packet_time = 0; //record timestamp of last good packet
     private long startup_time=0;
     // Get SharedPreferences object
 
@@ -59,7 +59,8 @@ public class Predict extends Thread implements Runnable{
 
     public int get_last_packet_quality() {
         boolean inBootup = System.currentTimeMillis() - startup_time < 2000;
-        boolean last_packet_expired = (System.currentTimeMillis()- last_good_packet_time) < 2000;
+        boolean last_packet_expired = (System.currentTimeMillis()- last_packet_time) > 2000;
+        Log.i("packet_conditions","inBootup"+String.valueOf(inBootup) + "  expired:" + String.valueOf(last_packet_expired));
         if (inBootup) {
             return 3; // in bootup number
         }else if (!last_packet_expired ) {// if time since last good packet is less than 2 seconds
@@ -185,6 +186,8 @@ public class Predict extends Thread implements Runnable{
                 //last_packet_quality = 2;
             }
             parsePacket();
+            last_packet_time = System.currentTimeMillis(); // record timestamp
+            Log.i("last_packet_time",String.valueOf(last_packet_time));
             if (number_of_good_packets > 1) {
             extrapolate();
             //check_auto_reset();
@@ -222,12 +225,15 @@ public class Predict extends Thread implements Runnable{
                     }
                 }
                 last_packet_quality = 2; // Good packet! notify user
-                last_good_packet_time = System.currentTimeMillis(); // record timestamp
+
                 if (has_check_letters) {
                     append_packet_data_omit_letters( telemetryTokens);
                 }
                 else{
                     append_packet_data_no_letters(telemetryTokens);
+                }
+                if (decoded_rocket_latitudes.get(decoded_rocket_latitudes.size()-1) == 0) {
+                    last_packet_quality = 1; // bad packet, notify user
                 }
             } else {
                 last_packet_quality = 1;} // bad packet, notify user

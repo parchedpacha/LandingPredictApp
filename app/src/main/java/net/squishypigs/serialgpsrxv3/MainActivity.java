@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void indicate_packet_quality (int packet_quality){
         //0 = none, 1 = bad, 2 = good
-
+        Log.i("packet_quality",String.valueOf(packet_quality));
         TextView indicator = findViewById(R.id.Packet_quality_indicator);
         if (packet_quality == 3) {
             indicator.setText(getString(R.string.bootupText));

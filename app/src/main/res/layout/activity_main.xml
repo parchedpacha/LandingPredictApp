@@ -60,7 +60,7 @@
     <TextView
         android:id="@+id/landing_prediction_area"
         android:layout_width="220dp"
-        android:layout_height="49dp"
+        android:layout_height="55dp"
         android:gravity="center"
         android:text="@string/landing_prediction"
         android:textAllCaps="false"
@@ -196,7 +196,7 @@
         app:layout_constraintEnd_toStartOf="@+id/clearButton" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/packetTableHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
@@ -206,17 +206,30 @@
         app:layout_constraintEnd_toEndOf="@+id/scrollView2"
         app:layout_constraintStart_toStartOf="@+id/scrollView2" />
 
-    <TextView
-        android:id="@+id/Packet_quality_indicator"
-        android:layout_width="175dp"
-        android:layout_height="152dp"
-        android:layout_marginEnd="4dp"
-        android:background="#FF5733"
-        android:gravity="center"
-        android:text="@string/bootupText"
-        android:textColor="#FFFFFF"
-        android:textSize="30sp"
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        app:cardBackgroundColor="#FF5733"
+        app:cardCornerRadius="7dp"
+        app:cardElevation="20dp"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
+        app:layout_constraintStart_toEndOf="@+id/button"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2">
+
+
+        <TextView
+            android:id="@+id/Packet_quality_indicator"
+            android:fontFamily="serif"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginEnd="0dp"
+            android:background="#FF5733"
+            android:gravity="center"
+            android:text="@string/bootupText"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"/>
+
+    </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
