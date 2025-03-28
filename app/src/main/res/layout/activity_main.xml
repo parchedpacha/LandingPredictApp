@@ -210,27 +210,29 @@
         android:id="@+id/bad_packet_view"
         android:layout_width="157dp"
         android:layout_height="154dp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/LANDED_Text_view"
         app:layout_constraintTop_toBottomOf="@+id/scrollView2"
         app:srcCompat="@drawable/bad_packet" />
+
     <ImageView
         android:id="@+id/no_packet_view"
         android:layout_width="157dp"
         android:layout_height="154dp"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/LANDED_Text_view"
         app:layout_constraintTop_toBottomOf="@+id/scrollView2"
         app:srcCompat="@drawable/no_packet" />
+
     <ImageView
         android:id="@+id/good_packet_view"
         android:layout_width="157dp"
         android:layout_height="154dp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/LANDED_Text_view"
         app:layout_constraintTop_toBottomOf="@+id/scrollView2"
         app:srcCompat="@drawable/good_packet" />
 </androidx.constraintlayout.widget.ConstraintLayout>
