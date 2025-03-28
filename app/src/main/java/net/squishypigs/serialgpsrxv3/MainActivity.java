@@ -131,7 +131,26 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void indicate_packet_quality (int packet_quality){
+        //0 = none, 1 = bad, 2 = good
+        ImageView noPacket = findViewById(R.id.no_packet_view);
+        ImageView badPacket = findViewById(R.id.bad_packet_view);
+        ImageView goodPacket = findViewById(R.id.good_packet_view);
+        if (packet_quality == 2) {
+            noPacket.setVisibility(View.GONE);
+            badPacket.setVisibility(View.GONE);
+            goodPacket.setVisibility(View.VISIBLE);
+        } else if (packet_quality == 1) {
+            noPacket.setVisibility(View.GONE);
+            badPacket.setVisibility(View.VISIBLE);
+            goodPacket.setVisibility(View.GONE);
+        } else {
+            noPacket.setVisibility(View.VISIBLE);
+            badPacket.setVisibility(View.GONE);
+            goodPacket.setVisibility(View.GONE);
+        }
 
+    }
 
 
 

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.google.common.primitives.Doubles;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -27,7 +30,8 @@ public class Predict extends Thread implements Runnable{
     private ArrayList<Double> decoded_rocket_voltages = new ArrayList<>();
     private final String[] check_letters={"A","O","T","H","P","V"};//lAt,lOng,Time,Height,HDOP,Voltage <-- in future ill change satellites to HDOP
     private DataStore datastore;
-
+    private int last_packet_quality = 0; //0 = no packet, 1 = bad packet, 2 = good packet
+    private long last_good_packet_time = 0; //record timestamp of last good packet
     // Get SharedPreferences object
 
 
@@ -51,7 +55,13 @@ public class Predict extends Thread implements Runnable{
         return datastore.getString("last10packets","No Saved Packets");
     }
 
-
+    public int get_last_packet_quality() {
+        if ((System.currentTimeMillis()- last_good_packet_time) < 1500) {// if time since last good packet is less than 1.5 seconds
+            return last_packet_quality;
+        } else {
+            return 0; // say we recievved no packet at all if it has been too long
+        }
+    }
 
     public String getDescentRate() {
         final DecimalFormat df = new DecimalFormat("###.0");
@@ -160,11 +170,13 @@ public class Predict extends Thread implements Runnable{
                 raw_packets.add(newpacket);
                 newpacket="";
                 saveLast10Packets();
+                //last_packet_quality = 2;
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
                 raw_packets.add(split_packets[0]);
                 newpacket = split_packets[1];
                 saveLast10Packets();
+                //last_packet_quality = 2;
             }
             parsePacket();
             if (number_of_good_packets > 1) {
@@ -189,49 +201,56 @@ public class Predict extends Thread implements Runnable{
         boolean[] bad_fields = {false,false,false,false,false,false};
         if(parts.length !=6) { //only verify packets of correct length
             bad_fields[0]=true; // if packet is not of correct length, flag it
+            last_packet_quality = 1; // bad packet, notify user
             //Log.i("Predict","Fields = "+parts.length);
         }
         if (!any(bad_fields)) { // this is run if all of the fields are good
             StringTokenizer telemetryTokens=new StringTokenizer(lastpacketString,","); //substring is used to remove the identification character
             if (telemetryTokens.countTokens() == check_letters.length) { //make sure we have as many telemetry numbers as we expect before trying to store their values into our pseudo database
-
-
                 number_of_good_packets++;
-                boolean has_check_letters = false;
-                for (String item : check_letters) {
-                    if (lastpacketString.contains(item)) {
+                boolean has_check_letters = false; //start off by assuming we have a bad packet
+                for (String item : check_letters) { //loop over our last packet, once per check letter
+                    if (lastpacketString.contains(item)) { // I think we are checking if we have check letters at all, and choosing a different import function based on that.
                         has_check_letters=true;
                         break;
                     }
                 }
-
+                last_packet_quality = 2; // Good packet! notify user
+                last_good_packet_time = System.currentTimeMillis(); // record timestamp
                 if (has_check_letters) {
-                    decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                    decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                    decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1));
-                    decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                    decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken().substring(1)));
-                    decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
-                    recieved_timestamps.add( (double)Instant.now().getEpochSecond());
+                    append_packet_data_omit_letters( telemetryTokens);
                 }
                 else{
-                    decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                    decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                    decoded_rocket_datestamps.add(telemetryTokens.nextToken());
-                    decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
-                    decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken()));
-                    decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken()));
-                    recieved_timestamps.add((double) Instant.now().getEpochSecond());
-
-                    //Log.i("Predict", decoded_rocket_altitudes.get(L)+",");
-                    //Log.i("Predict Times", String.valueOf((double)Instant.now().getEpochSecond()));
+                    append_packet_data_no_letters(telemetryTokens);
                 }
-            }
-        }
+            } else {
+                last_packet_quality = 1;} // bad packet, notify user
+        } else {
+            last_packet_quality = 1; }// bad packet, notify user
+
         // ast this point we have completely parsed the packet and assigned its contents to our respective variables. Now move onto the extrapolate function
     }
 
 
+    private void append_packet_data_omit_letters( StringTokenizer telemetryTokens){
+        decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+        decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+        decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1));
+        decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+        decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken().substring(1)));
+        decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
+        recieved_timestamps.add( (double)Instant.now().getEpochSecond());
+    }
+
+    private void append_packet_data_no_letters(StringTokenizer telemetryTokens){
+        decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+        decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+        decoded_rocket_datestamps.add(telemetryTokens.nextToken());
+        decoded_rocket_altitudes.add(Double.parseDouble(telemetryTokens.nextToken()));
+        decoded_rocket_satellites.add(Integer.parseInt(telemetryTokens.nextToken()));
+        decoded_rocket_voltages.add(Double.parseDouble(telemetryTokens.nextToken()));
+        recieved_timestamps.add((double) Instant.now().getEpochSecond());
+    }
 //    /**
 //     *
 //     * @param loc Current User Location

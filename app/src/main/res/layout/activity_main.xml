@@ -9,26 +9,24 @@
 
     <TextView
         android:id="@+id/LANDED_Text_view"
-        android:layout_width="190dp"
-        android:layout_height="37dp"
+        android:layout_width="220dp"
+        android:layout_height="38dp"
         android:gravity="center"
         android:text="LANDED"
         android:textAllCaps="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toTopOf="@+id/landing_prediction_area"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/Descent_Rate_Text_view"
-        android:layout_width="178dp"
-        android:layout_height="61dp"
+        android:layout_width="220dp"
+        android:layout_height="58dp"
         android:gravity="center"
         android:text="@string/DescentRateLabel"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/LANDED_Text_view"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
 
@@ -52,24 +50,22 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="220dp"
+        android:layout_height="51dp"
         android:onClick="send_to_gmaps_callback"
         android:text="@string/landing_prediction_gmaps_btn_txt"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/landing_prediction_area"
-        android:layout_width="292dp"
-        android:layout_height="60dp"
+        android:layout_width="220dp"
+        android:layout_height="49dp"
+        android:gravity="center"
         android:text="@string/landing_prediction"
         android:textAllCaps="false"
-        android:gravity="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toTopOf="@+id/button"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ScrollView
@@ -210,4 +206,31 @@
         app:layout_constraintEnd_toEndOf="@+id/scrollView2"
         app:layout_constraintStart_toStartOf="@+id/scrollView2" />
 
+    <ImageView
+        android:id="@+id/bad_packet_view"
+        android:layout_width="157dp"
+        android:layout_height="154dp"
+        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/LANDED_Text_view"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+        app:srcCompat="@drawable/bad_packet" />
+    <ImageView
+        android:id="@+id/no_packet_view"
+        android:layout_width="157dp"
+        android:layout_height="154dp"
+        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/LANDED_Text_view"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+        app:srcCompat="@drawable/no_packet" />
+    <ImageView
+        android:id="@+id/good_packet_view"
+        android:layout_width="157dp"
+        android:layout_height="154dp"
+        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/LANDED_Text_view"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+        app:srcCompat="@drawable/good_packet" />
 </androidx.constraintlayout.widget.ConstraintLayout>
