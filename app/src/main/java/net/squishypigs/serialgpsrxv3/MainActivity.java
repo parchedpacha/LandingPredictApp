@@ -135,7 +135,10 @@ public class MainActivity extends AppCompatActivity {
         //0 = none, 1 = bad, 2 = good
 
         TextView indicator = findViewById(R.id.Packet_quality_indicator);
-        if (packet_quality == 2) {
+        if (packet_quality == 3) {
+            indicator.setText(getString(R.string.bootupText));
+            indicator.setBackgroundColor(getColor(R.color.bootup_brown));
+        } else if (packet_quality == 2) {
             indicator.setText(getString(R.string.goodPacketText));
             indicator.setBackgroundColor(getColor(R.color.good_green));
         } else if (packet_quality == 1) {

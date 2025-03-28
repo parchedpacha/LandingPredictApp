@@ -30,8 +30,9 @@ public class Predict extends Thread implements Runnable{
     private ArrayList<Double> decoded_rocket_voltages = new ArrayList<>();
     private final String[] check_letters={"A","O","T","H","P","V"};//lAt,lOng,Time,Height,HDOP,Voltage <-- in future ill change satellites to HDOP
     private DataStore datastore;
-    private int last_packet_quality = 0; //0 = no packet, 1 = bad packet, 2 = good packet
+    private int last_packet_quality = 0; //0 = no packet, 1 = bad packet, 2 = good packet, 3 == in bootup
     private long last_good_packet_time = 0; //record timestamp of last good packet
+    private long startup_time=0;
     // Get SharedPreferences object
 
 
@@ -41,6 +42,7 @@ public class Predict extends Thread implements Runnable{
     public Predict(Double altitude,DataStore datastore){
         this.user_altitude = altitude;
         this.datastore=datastore;
+        this.startup_time=System.currentTimeMillis();
     }
 
     @Override
@@ -56,10 +58,14 @@ public class Predict extends Thread implements Runnable{
     }
 
     public int get_last_packet_quality() {
-        if ((System.currentTimeMillis()- last_good_packet_time) < 1500) {// if time since last good packet is less than 1.5 seconds
+        boolean inBootup = System.currentTimeMillis() - startup_time < 2000;
+        boolean last_packet_expired = (System.currentTimeMillis()- last_good_packet_time) < 2000;
+        if (inBootup) {
+            return 3; // in bootup number
+        }else if (!last_packet_expired ) {// if time since last good packet is less than 2 seconds
             return last_packet_quality;
         } else {
-            return 0; // say we recievved no packet at all if it has been too long
+            return 0; // say we recieved no packet at all if it has been too long
         }
     }
 
