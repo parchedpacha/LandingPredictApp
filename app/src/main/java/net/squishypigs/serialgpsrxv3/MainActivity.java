@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 if (predict.getOnGround()) {
                 landedindicator.setVisibility(View.VISIBLE);}
                 else {landedindicator.setVisibility(View.GONE);}
-
+                indicate_packet_quality(predict.get_last_packet_quality()); // run the packet quality indicator every loop
             }
         };
         handler.postDelayed(r, 0);
@@ -137,17 +137,17 @@ public class MainActivity extends AppCompatActivity {
         ImageView badPacket = findViewById(R.id.bad_packet_view);
         ImageView goodPacket = findViewById(R.id.good_packet_view);
         if (packet_quality == 2) {
-            noPacket.setVisibility(View.GONE);
-            badPacket.setVisibility(View.GONE);
+            noPacket.setVisibility(View.INVISIBLE);
+            badPacket.setVisibility(View.INVISIBLE);
             goodPacket.setVisibility(View.VISIBLE);
         } else if (packet_quality == 1) {
-            noPacket.setVisibility(View.GONE);
+            noPacket.setVisibility(View.INVISIBLE);
             badPacket.setVisibility(View.VISIBLE);
-            goodPacket.setVisibility(View.GONE);
+            goodPacket.setVisibility(View.INVISIBLE);
         } else {
             noPacket.setVisibility(View.VISIBLE);
-            badPacket.setVisibility(View.GONE);
-            goodPacket.setVisibility(View.GONE);
+            badPacket.setVisibility(View.INVISIBLE);
+            goodPacket.setVisibility(View.INVISIBLE);
         }
 
     }
