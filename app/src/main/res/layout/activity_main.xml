@@ -206,33 +206,17 @@
         app:layout_constraintEnd_toEndOf="@+id/scrollView2"
         app:layout_constraintStart_toStartOf="@+id/scrollView2" />
 
-    <ImageView
-        android:id="@+id/bad_packet_view"
-        android:layout_width="157dp"
-        android:layout_height="154dp"
-        android:visibility="invisible"
+    <TextView
+        android:id="@+id/Packet_quality_indicator"
+        android:layout_width="175dp"
+        android:layout_height="152dp"
+        android:layout_marginEnd="4dp"
+        android:background="#FF5733"
+        android:gravity="center"
+        android:text="@string/bootupText"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
-        app:srcCompat="@drawable/bad_packet" />
-
-    <ImageView
-        android:id="@+id/no_packet_view"
-        android:layout_width="157dp"
-        android:layout_height="154dp"
-        android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
-        app:srcCompat="@drawable/no_packet" />
-
-    <ImageView
-        android:id="@+id/good_packet_view"
-        android:layout_width="157dp"
-        android:layout_height="154dp"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
-        app:srcCompat="@drawable/good_packet" />
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -133,21 +133,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void indicate_packet_quality (int packet_quality){
         //0 = none, 1 = bad, 2 = good
-        ImageView noPacket = findViewById(R.id.no_packet_view);
-        ImageView badPacket = findViewById(R.id.bad_packet_view);
-        ImageView goodPacket = findViewById(R.id.good_packet_view);
+
+        TextView indicator = findViewById(R.id.Packet_quality_indicator);
         if (packet_quality == 2) {
-            noPacket.setVisibility(View.INVISIBLE);
-            badPacket.setVisibility(View.INVISIBLE);
-            goodPacket.setVisibility(View.VISIBLE);
+            indicator.setText(getString(R.string.goodPacketText));
+            indicator.setBackgroundColor(getColor(R.color.good_green));
         } else if (packet_quality == 1) {
-            noPacket.setVisibility(View.INVISIBLE);
-            badPacket.setVisibility(View.VISIBLE);
-            goodPacket.setVisibility(View.INVISIBLE);
+            indicator.setText(getString(R.string.badPacketText));
+            indicator.setBackgroundColor(getColor(R.color.warning_orange));
         } else {
-            noPacket.setVisibility(View.VISIBLE);
-            badPacket.setVisibility(View.INVISIBLE);
-            goodPacket.setVisibility(View.INVISIBLE);
+            indicator.setText(getString(R.string.noPacketText));
+            indicator.setBackgroundColor(getColor(R.color.lacking_grey));
         }
 
     }
