@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Landing Predict</string>
     <string name="landing_prediction_gmaps_btn_txt">Open Landing prediction in Google Maps</string>
-    <string name="landing_prediction">Landing prediction:</string>
+    <string name="landing_prediction">Landing prediction:\n</string>
     <string name="landing_guess_text">Packets will Appear here</string>
     <string name="altitude_meters_label">meters</string>
     <string name="ClearButton"> Clear</string>
-    <string name="DescentRateLabel">Descent Rate:</string>
+    <string name="DescentRateLabel">Descent Rate:\n</string>
     <string name="UserDefaultAltitude">100</string>
     <string name="UserAltitudeLabel">Your Altitude</string>
     <string name="PacketLabels">Latitude, Longitude, Time, Height, Satellites, Batt Voltage</string>

@@ -51,7 +51,7 @@
     <Button
         android:id="@+id/button"
         android:layout_width="220dp"
-        android:layout_height="51dp"
+        android:layout_height="55dp"
         android:onClick="send_to_gmaps_callback"
         android:text="@string/landing_prediction_gmaps_btn_txt"
         app:layout_constraintBottom_toTopOf="@+id/user_altitude_edit_text"
@@ -60,11 +60,12 @@
     <TextView
         android:id="@+id/landing_prediction_area"
         android:layout_width="220dp"
-        android:layout_height="55dp"
+        android:layout_height="80dp"
         android:gravity="center"
         android:text="@string/landing_prediction"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textSize="20dp"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintStart_toStartOf="parent" />
 
