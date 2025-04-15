@@ -201,11 +201,23 @@ public class Predict extends Thread implements Runnable{
         // TODO make sure the string by this point is split into individual packets
         String lastpacketString = raw_packets.get(raw_packets.size() - 1);
 
+        //remove nulls, spaces and replace overflows
         if (lastpacketString.contains("null")) { // if our string has "null" in it, we need to excise it
-            lastpacketString = lastpacketString.replace("null","");
+            lastpacketString = lastpacketString.replaceAll("null","");
+        }
+        if (lastpacketString.contains("ovf")){
+            Log.i("Predicter","replaced overflow at location " +lastpacketString.indexOf("ovf"));
+            lastpacketString=lastpacketString.replaceAll("ovf",String.valueOf(0.00));
 
         }
-        //Log.i("Predict", lastpacketString);
+        if (lastpacketString.contains(" ")){
+            Log.i("Predicter","replaced space at location " +lastpacketString.indexOf(" "));
+            lastpacketString= lastpacketString.replaceAll(" ","");
+        if (lastpacketString.contains("AA")) {
+            lastpacketString= lastpacketString.replaceAll("AA","A");
+        }
+        }
+        Log.i("Predicter", lastpacketString);
         String[] parts= lastpacketString.split("[,]",0);
         boolean[] bad_fields = {false,false,false,false,false,false};
         if(parts.length !=6) { //only verify packets of correct length
@@ -245,6 +257,7 @@ public class Predict extends Thread implements Runnable{
 
 
     private void append_packet_data_omit_letters( StringTokenizer telemetryTokens){
+
         decoded_rocket_latitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
         decoded_rocket_longitudes.add(Double.parseDouble(telemetryTokens.nextToken().substring(1)));
         decoded_rocket_datestamps.add(telemetryTokens.nextToken().substring(1));
