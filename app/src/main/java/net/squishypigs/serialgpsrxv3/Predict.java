@@ -195,6 +195,26 @@ public class Predict extends Thread implements Runnable{
         }
     }
 
+    public String filterBadCharacters(String input){
+        String workingString=input;
+        if (workingString.contains("null")) { // if our string has "null" in it, we need to excise it
+            workingString = workingString.replaceAll("null","");
+        }
+        if (workingString.contains("ovf")){
+            Log.i("Predicter","replaced overflow at location " +workingString.indexOf("ovf"));
+            workingString=workingString.replaceAll("ovf",String.valueOf(0.00));
+
+        }
+        if (workingString.contains(" ")) {
+            Log.i("Predicter", "replaced space at location " + workingString.indexOf(" "));
+            workingString = workingString.replaceAll(" ", "");
+        }
+        if (workingString.contains("AA")) {
+            workingString= workingString.replaceAll("AA","A");
+        }
+        return workingString;
+    }
+
     public void parsePacket() { //this method parses a given packet for our data, and if its good, updates our list of data
         //A42.558071  ,O-83.180877 ,T12:00:19,H02000.9,S13,V8.12
         // A sample packet, lAt, lOng, Time, Height, Satellites, Voltage
@@ -202,22 +222,10 @@ public class Predict extends Thread implements Runnable{
         String lastpacketString = raw_packets.get(raw_packets.size() - 1);
 
         //remove nulls, spaces and replace overflows
-        if (lastpacketString.contains("null")) { // if our string has "null" in it, we need to excise it
-            lastpacketString = lastpacketString.replaceAll("null","");
-        }
-        if (lastpacketString.contains("ovf")){
-            Log.i("Predicter","replaced overflow at location " +lastpacketString.indexOf("ovf"));
-            lastpacketString=lastpacketString.replaceAll("ovf",String.valueOf(0.00));
+        lastpacketString = filterBadCharacters(lastpacketString);
 
-        }
-        if (lastpacketString.contains(" ")){
-            Log.i("Predicter","replaced space at location " +lastpacketString.indexOf(" "));
-            lastpacketString= lastpacketString.replaceAll(" ","");
-        if (lastpacketString.contains("AA")) {
-            lastpacketString= lastpacketString.replaceAll("AA","A");
-        }
-        }
-        Log.i("Predicter", lastpacketString);
+
+        Log.i("Predicter", "post character filter: " + lastpacketString);
         String[] parts= lastpacketString.split("[,]",0);
         boolean[] bad_fields = {false,false,false,false,false,false};
         if(parts.length !=6) { //only verify packets of correct length
