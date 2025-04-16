@@ -209,8 +209,12 @@ public class Predict extends Thread implements Runnable{
             Log.i("Predicter", "replaced space at location " + workingString.indexOf(" "));
             workingString = workingString.replaceAll(" ", "");
         }
-        if (workingString.contains("AA")) {
-            workingString= workingString.replaceAll("AA","A");
+
+        for (int i=0;i<check_letters.length-1;i++){//for loop goes through all check letters and checks packet for repeats
+            if (workingString.contains(check_letters[i]+check_letters[i])){
+             workingString=workingString.replaceAll(check_letters[i]+check_letters[i],check_letters[i]);
+             //removes repeats
+            }
         }
         return workingString;
     }
