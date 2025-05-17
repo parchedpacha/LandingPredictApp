@@ -60,7 +60,7 @@ public class Predict extends Thread implements Runnable{
     public int get_last_packet_quality() {
         boolean inBootup = System.currentTimeMillis() - startup_time < 2000;
         boolean last_packet_expired = (System.currentTimeMillis()- last_packet_time) > 2000;
-        Log.i("packet_conditions","inBootup"+String.valueOf(inBootup) + "  expired:" + String.valueOf(last_packet_expired));
+        //Log.i("packet_conditions","inBootup"+String.valueOf(inBootup) + "  expired:" + String.valueOf(last_packet_expired));
         if (inBootup) {
             return 3; // in bootup number
         }else if (!last_packet_expired ) {// if time since last good packet is less than 2 seconds
@@ -89,7 +89,7 @@ public class Predict extends Thread implements Runnable{
         descent_rate=0;
         number_of_good_packets=0;
         raw_packets = new ArrayList<>();
-        Log.i("Predict", "RESET");
+        //Log.i("Predict", "RESET");
     }
 //    public void check_auto_reset() {
 //        double current_alt= decoded_rocket_altitudes.get(decoded_rocket_altitudes.size()-1);
@@ -109,10 +109,10 @@ public class Predict extends Thread implements Runnable{
             }
             ArrayList<String> packets = new ArrayList<>(raw_packets.subList(start, end));
             String ReturnPackets=packets.toString();
-            ReturnPackets=ReturnPackets.replace("[","");
-            ReturnPackets=ReturnPackets.replace("]","");
-            ReturnPackets=ReturnPackets.replace("\n, ","\n");
-            ReturnPackets =ReturnPackets.replace("null","");
+            ReturnPackets=ReturnPackets.replaceAll("\\[" ,"");
+            ReturnPackets=ReturnPackets.replaceAll("\\]","");
+            ReturnPackets=ReturnPackets.replaceAll("\n, ","\n");
+            ReturnPackets =ReturnPackets.replaceAll("null","");
 
             return ReturnPackets;
         }
@@ -174,20 +174,20 @@ public class Predict extends Thread implements Runnable{
         newpacket = newpacket + incoming; //add new chars onto our buffer
         if (newpacket.contains("\n")) { //if our buffer has a newline, then it has one complete packet, probably
             if (newpacket.endsWith("\n")) { //if it ends on that newline, clear the buffer
-                raw_packets.add(newpacket);
+                raw_packets.add(newpacket); Log.i("Predictor1",newpacket);
                 newpacket="";
                 saveLast10Packets();
                 //last_packet_quality = 2;
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
-                raw_packets.add(split_packets[0]);
+                raw_packets.add(split_packets[0]); Log.i("Predictor2",split_packets[0]);
                 newpacket = split_packets[1];
                 saveLast10Packets();
                 //last_packet_quality = 2;
             }
             parsePacket();
             last_packet_time = System.currentTimeMillis(); // record timestamp
-            Log.i("last_packet_time",String.valueOf(last_packet_time));
+            //Log.i("last_packet_time",String.valueOf(last_packet_time));
             if (number_of_good_packets > 1) {
             extrapolate();
             //check_auto_reset();
@@ -201,12 +201,12 @@ public class Predict extends Thread implements Runnable{
             workingString = workingString.replaceAll("null","");
         }
         if (workingString.contains("ovf")){
-            Log.i("Predicter","replaced overflow at location " +workingString.indexOf("ovf"));
+            //Log.i("Predicter","replaced overflow at location " +workingString.indexOf("ovf"));
             workingString=workingString.replaceAll("ovf",String.valueOf(0.00));
 
         }
         if (workingString.contains(" ")) {
-            Log.i("Predicter", "replaced space at location " + workingString.indexOf(" "));
+            //Log.i("Predicter", "replaced space at location " + workingString.indexOf(" "));
             workingString = workingString.replaceAll(" ", "");
         }
 
@@ -229,7 +229,7 @@ public class Predict extends Thread implements Runnable{
         lastpacketString = filterBadCharacters(lastpacketString);
 
 
-        Log.i("Predicter", "post character filter: " + lastpacketString);
+        //Log.i("Predicter", "post character filter: " + lastpacketString);
         String[] parts= lastpacketString.split("[,]",0);
         boolean[] bad_fields = {false,false,false,false,false,false};
         if(parts.length !=6) { //only verify packets of correct length

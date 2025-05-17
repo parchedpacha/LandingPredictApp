@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void indicate_packet_quality (int packet_quality){
         //0 = none, 1 = bad, 2 = good
-        Log.i("packet_quality",String.valueOf(packet_quality));
+        //Log.i("packet_quality",String.valueOf(packet_quality));
         TextView indicator = findViewById(R.id.Packet_quality_indicator);
         if (packet_quality == 3) {
             indicator.setText(getString(R.string.bootupText));
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         // https://www.youtube.com/watch?v=rNYaEFl6Fms showed me how to do this, at some point I will encapsulate this whole shitty location process into another file
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)) {
-                Log.i(TAG, "need to ask for permission");
+                //Log.i(TAG, "need to ask for permission");
                 ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             } else {
                 ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     DecimalFormat df  = new DecimalFormat("###.0");
                     user_alt.setText(df.format(location.getAltitude()));
                 } else {
-                    Log.i(TAG,"Null Location");
+                    //Log.i(TAG,"Null Location");
                 }
             }
         });
