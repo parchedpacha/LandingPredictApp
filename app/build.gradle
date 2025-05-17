@@ -23,13 +23,13 @@ android {
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-//        debug {
-//            applicationIdSuffix ".debug" // Optional: so it can be installed alongside release
-//            versionNameSuffix "-debug"   // Optional: so it shows differently in app info
-//            debuggable true
-//            minifyEnabled false
-//            shrinkResources false
-//        }
+        debug {
+            applicationIdSuffix ".debug" // Optional: so it can be installed alongside release
+            versionNameSuffix "-debug"   // Optional: so it shows differently in app info
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
