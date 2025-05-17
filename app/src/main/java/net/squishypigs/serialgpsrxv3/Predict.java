@@ -174,13 +174,13 @@ public class Predict extends Thread implements Runnable{
         newpacket = newpacket + incoming; //add new chars onto our buffer
         if (newpacket.contains("\n")) { //if our buffer has a newline, then it has one complete packet, probably
             if (newpacket.endsWith("\n")) { //if it ends on that newline, clear the buffer
-                raw_packets.add(newpacket); Log.i("Predictor1",newpacket);
+                raw_packets.add(newpacket); //Log.i("Predictor1",newpacket);
                 newpacket="";
                 saveLast10Packets();
                 //last_packet_quality = 2;
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
-                raw_packets.add(split_packets[0]); Log.i("Predictor2",split_packets[0]);
+                raw_packets.add(split_packets[0]); //Log.i("Predictor2",split_packets[0]);
                 newpacket = split_packets[1];
                 saveLast10Packets();
                 //last_packet_quality = 2;
