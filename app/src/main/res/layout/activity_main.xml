@@ -194,6 +194,7 @@
         android:layout_marginEnd="8dp"
         android:text="@string/CopyLastCoords"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:onClick="CopyLandingCoords_callback"
         app:layout_constraintEnd_toStartOf="@+id/clearButton" />
 
     <TextView

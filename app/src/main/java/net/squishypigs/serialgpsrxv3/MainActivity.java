@@ -78,8 +78,11 @@ public class MainActivity extends AppCompatActivity {
             // TODO I think I need to add the listener declaration in here, not quite sure how
         }
 
-
-
+        // save button stuff
+        Button exportButton = findViewById(R.id.exportButton);
+        exportButton.setOnClickListener(view -> {
+            exporter.exportToCSV( this, predict.get_export_packets());
+        });
         // END SERIAL TRASH ------------------------------------------------------------------------
         View.OnFocusChangeListener listener = (v, hasFocus) -> {
             if (!hasFocus) {
@@ -91,11 +94,10 @@ public class MainActivity extends AppCompatActivity {
         };
         User_alt_ET.setOnFocusChangeListener(listener);
 
-        @SuppressLint("SetTextI18n") View.OnClickListener copyButtonListener = (v) -> { // update user altitude when user stops having cursor in altitude edit text box
-            //I could not give any less of a f*** about the concatenation warning
-            //predict.read_one_time();
-            CopyLandingCoords();
-        };
+        // update user altitude when user stops having cursor in altitude edit text box
+        //I could not give any less of a f*** about the concatenation warning
+        //predict.read_one_time();
+        @SuppressLint("SetTextI18n") View.OnClickListener copyButtonListener = this::CopyLandingCoords_callback;
         Button CopyButton = findViewById(R.id.CopyButton);
         CopyButton.setOnClickListener(copyButtonListener);
         //mainLooper = new Handler(Looper.getMainLooper());
@@ -129,10 +131,11 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         handler.postDelayed(r, 0);
-        exporter = new storeCSV(this);
+
     }
     public void store_data_callback(View app) {
-        exporter.public_export( predict.get_export_packets());
+
+
     }
     private void indicate_packet_quality (int packet_quality){
         //0 = none, 1 = bad, 2 = good
@@ -165,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void CopyLandingCoords() {
+    public void CopyLandingCoords_callback(View view) {
         int sdk = android.os.Build.VERSION.SDK_INT;
         if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
             android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -291,6 +294,8 @@ public class MainActivity extends AppCompatActivity {
         packet_area.setText("");
         predict.resetPredict();
     }
+
+
 
     public boolean check_connection() {
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);

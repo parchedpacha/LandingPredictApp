@@ -1,45 +1,40 @@
 package net.squishypigs.serialgpsrxv3;
-import java.util.*;
+
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import androidx.core.content.FileProvider;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import android.content.Context;
-public class storeCSV {
-    List<String[]> data = new ArrayList<>();
-    boolean error=false;
-    Context mainActivityContext;
 
-    public storeCSV(MainActivity mainActivity) {
-        mainActivityContext = mainActivity;
-    }
-    // TODO use datastore to make persistent storage, just in case!
-    public boolean public_export(ArrayList<String[]> data) {
-        File file = new File(mainActivityContext.getExternalFilesDir(null), "export.csv");
-        exportToCSV(file,data);
-        return error;
-    }
-    public void exportToCSV(File file, List<String[]> data) {
+public class storeCSV {
+
+    public static void exportToCSV(Context context, String csvData) {
+        File file = new File(context.getExternalFilesDir(null), "export.csv");
+
         try {
             FileWriter writer = new FileWriter(file);
-            for (String[] row : data) {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < row.length; i++) {
-                    // Escape commas and quotes
-                    String cell = row[i].replace("\"", "\"\"");
-                    if (cell.contains(",") || cell.contains("\"")) {
-                        cell = "\"" + cell + "\"";
-                    }
-                    sb.append(cell);
-                    if (i < row.length - 1) {
-                        sb.append(",");
-                    }
-                }
-                writer.append(sb.toString()).append("\n");
-            }
+            writer.write(csvData);
             writer.flush();
             writer.close();
+
+            // Share the file
+            Uri fileUri = FileProvider.getUriForFile(context,
+                    context.getPackageName() + ".fileprovider",
+                    file);
+
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/csv");
+            intent.putExtra(Intent.EXTRA_STREAM, fileUri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            context.startActivity(Intent.createChooser(intent, "Share CSV file"));
+
         } catch (IOException e) {
             e.printStackTrace();
+            // Optionally handle with a Toast or Log
         }
     }
 }

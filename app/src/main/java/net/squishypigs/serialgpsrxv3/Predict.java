@@ -47,6 +47,7 @@ public class Predict extends Thread implements Runnable{
 
     private void saveLast10Packets() {
         datastore.saveString("last10packets",getLastPackets());
+        datastore.saveArrayList("export packets",export_packets);
     }
     private String returnLastPackets() {
         return datastore.getString("last10packets","No Saved Packets");
@@ -74,6 +75,8 @@ public class Predict extends Thread implements Runnable{
         return onGround;
     }
     public void resetPredict() {
+        datastore.saveString("last10packets","");
+        datastore.saveString("export packets","");
         decoded_rocket_latitudes = new ArrayList<>();
         decoded_rocket_longitudes = new ArrayList<>();
         decoded_rocket_datestamps = new ArrayList<>();
@@ -369,8 +372,8 @@ public class Predict extends Thread implements Runnable{
         return false;
     }
 
-    public ArrayList<String[]> get_export_packets() {
-        return export_packets;
+    public String get_export_packets() {
+        return datastore.getString("export packets", "");
     }
 
 
