@@ -1,11 +1,6 @@
 package net.squishypigs.serialgpsrxv3;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
 
 import com.google.common.primitives.Doubles;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +11,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<>();
-
+    private ArrayList<String[]>  export_packets = new ArrayList<>();
     private String newpacket;
     private int number_of_good_packets=0;
     private String landing_prediction_coords;
@@ -175,12 +170,14 @@ public class Predict extends Thread implements Runnable{
         if (newpacket.contains("\n")) { //if our buffer has a newline, then it has one complete packet, probably
             if (newpacket.endsWith("\n")) { //if it ends on that newline, clear the buffer
                 raw_packets.add(newpacket); //Log.i("Predictor1",newpacket);
+                export_packets.add(new String[]{newpacket});
                 newpacket="";
                 saveLast10Packets();
                 //last_packet_quality = 2;
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
                 raw_packets.add(split_packets[0]); //Log.i("Predictor2",split_packets[0]);
+                export_packets.add(new String[]{split_packets[0]});
                 newpacket = split_packets[1];
                 saveLast10Packets();
                 //last_packet_quality = 2;
@@ -371,5 +368,10 @@ public class Predict extends Thread implements Runnable{
         }
         return false;
     }
+
+    public ArrayList<String[]> get_export_packets() {
+        return export_packets;
+    }
+
 
     }

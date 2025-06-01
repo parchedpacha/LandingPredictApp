@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public Predict predict;
     public UsbSerialPort port;
     public SerialInputOutputManager usbSIoManager;
+    public storeCSV exporter;
     public String landing_prediction = "42.561996,-83.162815",TAG = "Main Activity";
     int LOCATION_REQUEST_CODE = 10001;
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -128,9 +129,11 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         handler.postDelayed(r, 0);
-
+        exporter = new storeCSV(this);
     }
-
+    public void store_data_callback(View app) {
+        exporter.public_export( predict.get_export_packets());
+    }
     private void indicate_packet_quality (int packet_quality){
         //0 = none, 1 = bad, 2 = good
         //Log.i("packet_quality",String.valueOf(packet_quality));
