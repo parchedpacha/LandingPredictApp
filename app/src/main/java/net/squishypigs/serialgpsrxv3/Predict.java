@@ -1,11 +1,6 @@
 package net.squishypigs.serialgpsrxv3;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
 
 import com.google.common.primitives.Doubles;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +9,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import android.content.Context;
+import android.media.MediaPlayer;
+
 public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<>();
-
+    private ArrayList<String[]>  export_packets = new ArrayList<>();
     private String newpacket;
     private int number_of_good_packets=0;
     private String landing_prediction_coords;
@@ -38,12 +36,16 @@ public class Predict extends Thread implements Runnable{
 
     private double user_altitude,descent_rate;
     private boolean onGround=false;
-
-    public Predict(Double altitude,DataStore datastore){
+    MediaPlayer mediaPlayer;
+    public Predict(Context context,Double altitude,DataStore datastore){
+        mediaPlayer = MediaPlayer.create(context, R.raw.quindar);
+        mediaPlayer.start();
         this.user_altitude = altitude;
         this.datastore=datastore;
         this.startup_time=System.currentTimeMillis();
     }
+
+
 
     @Override
     public void run() {
@@ -51,7 +53,9 @@ public class Predict extends Thread implements Runnable{
     }
 
     private void saveLast10Packets() {
+        mediaPlayer.start();
         datastore.saveString("last10packets",getLastPackets());
+        datastore.saveArrayList("export packets",export_packets);
     }
     private String returnLastPackets() {
         return datastore.getString("last10packets","No Saved Packets");
@@ -79,6 +83,8 @@ public class Predict extends Thread implements Runnable{
         return onGround;
     }
     public void resetPredict() {
+        datastore.saveString("last10packets","");
+        datastore.saveString("export packets","");
         decoded_rocket_latitudes = new ArrayList<>();
         decoded_rocket_longitudes = new ArrayList<>();
         decoded_rocket_datestamps = new ArrayList<>();
@@ -175,12 +181,14 @@ public class Predict extends Thread implements Runnable{
         if (newpacket.contains("\n")) { //if our buffer has a newline, then it has one complete packet, probably
             if (newpacket.endsWith("\n")) { //if it ends on that newline, clear the buffer
                 raw_packets.add(newpacket); //Log.i("Predictor1",newpacket);
+                export_packets.add(new String[]{newpacket});
                 newpacket="";
                 saveLast10Packets();
                 //last_packet_quality = 2;
             }else{ //if we have more thant the endline, then split on it, save both ends
                 String[] split_packets = newpacket.split("\n");
                 raw_packets.add(split_packets[0]); //Log.i("Predictor2",split_packets[0]);
+                export_packets.add(new String[]{split_packets[0]});
                 newpacket = split_packets[1];
                 saveLast10Packets();
                 //last_packet_quality = 2;
@@ -371,5 +379,10 @@ public class Predict extends Thread implements Runnable{
         }
         return false;
     }
+
+    public String get_export_packets() {
+        return datastore.getString("export packets", "");
+    }
+
 
     }

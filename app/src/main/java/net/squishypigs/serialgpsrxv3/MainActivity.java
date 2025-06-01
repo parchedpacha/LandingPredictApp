@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public Predict predict;
     public UsbSerialPort port;
     public SerialInputOutputManager usbSIoManager;
+    public storeCSV exporter;
     public String landing_prediction = "42.561996,-83.162815",TAG = "Main Activity";
     int LOCATION_REQUEST_CODE = 10001;
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         DataStore dataStore = new DataStore(this);
-        predict = new Predict(100.0, dataStore);
+        predict = new Predict(this,100.0, dataStore);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         EditText User_alt_ET = findViewById(R.id.user_altitude_edit_text);
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
@@ -77,9 +78,22 @@ public class MainActivity extends AppCompatActivity {
             // TODO I think I need to add the listener declaration in here, not quite sure how
         }
 
+        // save button stuff
+        Button exportButton = findViewById(R.id.exportButton);
+        exportButton.setOnClickListener(view -> {
 
-
+            boolean success = exporter.exportToCSV( this, predict.get_export_packets());
+            if (success) {
+                Toast.makeText(this, "CSV saved to Downloads", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to save CSV", Toast.LENGTH_SHORT).show();
+            }
+        });
         // END SERIAL TRASH ------------------------------------------------------------------------
+
+
+
+
         View.OnFocusChangeListener listener = (v, hasFocus) -> {
             if (!hasFocus) {
                 String text = User_alt_ET.getText().toString();
@@ -90,11 +104,10 @@ public class MainActivity extends AppCompatActivity {
         };
         User_alt_ET.setOnFocusChangeListener(listener);
 
-        @SuppressLint("SetTextI18n") View.OnClickListener copyButtonListener = (v) -> { // update user altitude when user stops having cursor in altitude edit text box
-            //I could not give any less of a f*** about the concatenation warning
-            //predict.read_one_time();
-            CopyLandingCoords();
-        };
+        // update user altitude when user stops having cursor in altitude edit text box
+        //I could not give any less of a f*** about the concatenation warning
+        //predict.read_one_time();
+        @SuppressLint("SetTextI18n") View.OnClickListener copyButtonListener = this::CopyLandingCoords_callback;
         Button CopyButton = findViewById(R.id.CopyButton);
         CopyButton.setOnClickListener(copyButtonListener);
         //mainLooper = new Handler(Looper.getMainLooper());
@@ -130,7 +143,10 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(r, 0);
 
     }
+    public void store_data_callback(View app) {
 
+
+    }
     private void indicate_packet_quality (int packet_quality){
         //0 = none, 1 = bad, 2 = good
         //Log.i("packet_quality",String.valueOf(packet_quality));
@@ -162,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void CopyLandingCoords() {
+    public void CopyLandingCoords_callback(View view) {
         int sdk = android.os.Build.VERSION.SDK_INT;
         if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
             android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -288,6 +304,8 @@ public class MainActivity extends AppCompatActivity {
         packet_area.setText("");
         predict.resetPredict();
     }
+
+
 
     public boolean check_connection() {
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
