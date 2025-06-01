@@ -9,6 +9,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import android.content.Context;
+import android.media.MediaPlayer;
+
 public class Predict extends Thread implements Runnable{
     private List<String> raw_packets = new ArrayList<>();
     private ArrayList<String[]>  export_packets = new ArrayList<>();
@@ -33,12 +36,16 @@ public class Predict extends Thread implements Runnable{
 
     private double user_altitude,descent_rate;
     private boolean onGround=false;
-
-    public Predict(Double altitude,DataStore datastore){
+    MediaPlayer mediaPlayer;
+    public Predict(Context context,Double altitude,DataStore datastore){
+        mediaPlayer = MediaPlayer.create(context, R.raw.quindar);
+        mediaPlayer.start();
         this.user_altitude = altitude;
         this.datastore=datastore;
         this.startup_time=System.currentTimeMillis();
     }
+
+
 
     @Override
     public void run() {
@@ -46,6 +53,7 @@ public class Predict extends Thread implements Runnable{
     }
 
     private void saveLast10Packets() {
+        mediaPlayer.start();
         datastore.saveString("last10packets",getLastPackets());
         datastore.saveArrayList("export packets",export_packets);
     }

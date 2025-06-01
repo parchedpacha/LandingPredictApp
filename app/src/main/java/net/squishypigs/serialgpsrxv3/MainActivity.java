@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         DataStore dataStore = new DataStore(this);
-        predict = new Predict(100.0, dataStore);
+        predict = new Predict(this,100.0, dataStore);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         EditText User_alt_ET = findViewById(R.id.user_altitude_edit_text);
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
@@ -90,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // END SERIAL TRASH ------------------------------------------------------------------------
+
+
+
+
         View.OnFocusChangeListener listener = (v, hasFocus) -> {
             if (!hasFocus) {
                 String text = User_alt_ET.getText().toString();
