@@ -81,7 +81,13 @@ public class MainActivity extends AppCompatActivity {
         // save button stuff
         Button exportButton = findViewById(R.id.exportButton);
         exportButton.setOnClickListener(view -> {
-            exporter.exportToCSV( this, predict.get_export_packets());
+
+            boolean success = exporter.exportToCSV( this, predict.get_export_packets());
+            if (success) {
+                Toast.makeText(this, "CSV saved to Downloads", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to save CSV", Toast.LENGTH_SHORT).show();
+            }
         });
         // END SERIAL TRASH ------------------------------------------------------------------------
         View.OnFocusChangeListener listener = (v, hasFocus) -> {
