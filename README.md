@@ -8,4 +8,4 @@ Here's a screenshot of a mostly up to date version.
 
 
 (NOTE: FAKED Coordinates, no live data, not my real location.)
-![screenshot](LandingPredict2.jpg)
+![screenshot](LandingPredict.png)
